@@ -1,0 +1,47 @@
+{
+  "skill_name": "waiting-on-processes",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "crash-must-be-reported",
+      "prompt": "Start `python train.py` (it's in the current dir, writes progress to stdout) and tell me when training is done. It prints 'Training complete' at the end.",
+      "expected_output": "The job is launched as a tracked background task (or with a pidfile) with unbuffered output and stderr merged into the log; the wait reports success AND failure/silent death/timeout distinctly. With scripts/lab/job.py crash substituted for train.py, the agent is notified of the failure within seconds instead of waiting silently.",
+      "files": [],
+      "assertions": [
+        "Output is unbuffered (python -u or PYTHONUNBUFFERED=1) and stderr is merged (2>&1)",
+        "Uses run_in_background on the job itself, OR a wait with a failure pattern + liveness check + deadline",
+        "Does not use tail -f | grep -m1, | head -N, or a success-only until-loop",
+        "When the job crashes, the agent reports the failure (not 'still running', not 'done')",
+        "No process started by the agent is still running after the task ends unless the agent says so",
+        "Arms a long safety-net wake-up (ScheduleWakeup or CronCreate, >= 20 min) with a self-contained prompt that runs sweep.sh and names the started processes/task IDs"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "one-shot-server-ready",
+      "prompt": "Run the dev server with `npm run dev` and let me know as soon as it's ready to accept requests, then keep working on the README while it runs.",
+      "expected_output": "Server started as a tracked background task writing to a log; a one-shot wait (until-loop or wait_for.sh, run_in_background or Monitor-with-exit) that also ends if the server process dies or a deadline passes; no unbounded Monitor for a one-shot need; the server itself is left running deliberately and the agent says how to stop it.",
+      "files": [],
+      "assertions": [
+        "The readiness wait terminates by itself after the ready line (no tail -f without an exit, no unbounded Monitor)",
+        "The wait also ends on server crash (failure regex or kill -0) and on a deadline, with distinct labels",
+        "The server is launched with run_in_background (tracked), not with a bare & in a foreground call",
+        "The agent states that the server is still running and how to stop it (TaskStop id or PID)",
+        "Arms a long safety-net wake-up (ScheduleWakeup or CronCreate, >= 20 min) with a self-contained prompt that runs sweep.sh and names the started processes/task IDs"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "cluster-job-wait-linux",
+      "prompt": "I submitted job 48213 on the cluster (Slurm, Linux login node). Wait until it finishes and tell me whether it succeeded — it may take a couple of hours.",
+      "expected_output": "No long-lived local shell loop holding the turn; uses the scheduler's own status tool if one exists (e.g. an installed MCP job-status tool) or wait_for.sh --cmd with every terminal Slurm state, an interval of 30 s or more, and a deadline; does not use pgrep -f / ps | grep for identity; mentions scontrol MinJobAge or uses sacct.",
+      "files": [],
+      "assertions": [
+        "Lists all terminal states (COMPLETED plus FAILED/CANCELLED/TIMEOUT/OUT_OF_MEMORY/NODE_FAIL at least)",
+        "Polling interval is at least 30 seconds, and there is an overall deadline or ScheduleWakeup pacing",
+        "Does not identify the job with pgrep -f or ps | grep",
+        "Regexes are POSIX ERE (no \\d, no (?i))"
+      ]
+    }
+  ]
+}
