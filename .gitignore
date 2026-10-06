@@ -1,0 +1,12 @@
+# Packaged skill artifacts
+dist/
+
+# Node.js
+node_modules/
+
+# Python
+__pycache__/
+.venv/
+
+# macOS
+.DS_Store
