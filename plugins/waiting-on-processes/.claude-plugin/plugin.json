@@ -1,7 +1,7 @@
 {
   "name": "waiting-on-processes",
   "displayName": "Waiting on Processes",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Writes waits and watches in Claude Code that end by themselves and catch failures, with a sweep that stops stray processes.",
   "author": {
     "name": "Eliott Jacopin",

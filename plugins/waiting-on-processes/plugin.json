@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "waiting-on-processes",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Writes waits and watches in Claude Code that end by themselves and catch failures, with a sweep that stops stray processes.",
   "author": {
     "name": "Eliott Jacopin",
