@@ -1,0 +1,20 @@
+{
+  "name": "waiting-on-processes",
+  "displayName": "Waiting on Processes",
+  "version": "0.0.0",
+  "description": "Writes waits and watches in Claude Code that end by themselves and catch failures, with a sweep that stops stray processes.",
+  "author": {
+    "name": "Eliott Jacopin",
+    "email": "eliott.jacopin@riken.jp"
+  },
+  "homepage": "https://github.com/CrackingShells/Pinion",
+  "repository": "https://github.com/CrackingShells/Pinion",
+  "license": "AGPL-3.0-or-later",
+  "keywords": [
+    "background",
+    "monitor",
+    "processes",
+    "agents"
+  ],
+  "skills": "./skills/"
+}

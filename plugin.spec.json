@@ -1,0 +1,37 @@
+{
+  "name": "pinion",
+  "description": "Pinion's agent-mechanics skills, packaged as installable plugins from one repository.",
+  "author": {
+    "name": "Eliott Jacopin",
+    "email": "eliott.jacopin@riken.jp"
+  },
+  "homepage": "https://github.com/CrackingShells/Pinion",
+  "repository": "https://github.com/CrackingShells/Pinion",
+  "license": "AGPL-3.0-or-later",
+  "ecosystems": ["claude", "codex", "agent-plugins"],
+  "marketplace": {
+    "hub": "https://github.com/CrackingShells/Nest"
+  },
+  "plugins": [
+    {
+      "name": "spawning-agent-plugins",
+      "dir": "plugins/spawning-agent-plugins",
+      "displayName": "Spawning Agent Plugins",
+      "description": "Turns a repository into an installable plugin for Claude Code, Codex, and Agent Plugins 1.0 clients.",
+      "version_from": "package.json:skills/spawning-agent-plugins/package.json",
+      "skills": "./skills/",
+      "keywords": ["plugin", "generator", "agents"],
+      "codex": { "category": "Developer Tools" }
+    },
+    {
+      "name": "waiting-on-processes",
+      "dir": "plugins/waiting-on-processes",
+      "displayName": "Waiting on Processes",
+      "description": "Writes waits and watches in Claude Code that end by themselves and catch failures, with a sweep that stops stray processes.",
+      "version_from": "package.json:skills/waiting-on-processes/package.json",
+      "skills": "./skills/",
+      "keywords": ["background", "monitor", "processes", "agents"],
+      "codex": { "category": "Developer Tools" }
+    }
+  ]
+}

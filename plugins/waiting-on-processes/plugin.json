@@ -1,0 +1,33 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "waiting-on-processes",
+  "version": "0.0.0",
+  "description": "Writes waits and watches in Claude Code that end by themselves and catch failures, with a sweep that stops stray processes.",
+  "author": {
+    "name": "Eliott Jacopin",
+    "email": "eliott.jacopin@riken.jp"
+  },
+  "homepage": "https://github.com/CrackingShells/Pinion",
+  "repository": "https://github.com/CrackingShells/Pinion",
+  "license": "AGPL-3.0-or-later",
+  "keywords": [
+    "background",
+    "monitor",
+    "processes",
+    "agents"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Waiting on Processes",
+        "shortDescription": "Writes waits and watches in Claude Code that end by themselves and catch failures, with a sweep that stops stray processes.",
+        "longDescription": "Writes waits and watches in Claude Code that end by themselves and catch failures, with a sweep that stops stray processes.",
+        "developerName": "Eliott Jacopin",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Read"
+        ]
+      }
+    }
+  }
+}
