@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:designing-tests:study-contract:1",
+  "title": "Study manifest",
+  "description": "The shape of a study manifest. The contract version is the last segment of this $id: a breaking change to this schema is a breaking release of the skill. Paths in a manifest are relative to the manifest's own directory.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "study", "research_questions", "statistical_questions", "protocol_version", "datasets", "evolution_log"],
+  "properties": {
+    "contract_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The contract version the manifest was written for; must equal the last segment of this schema's $id."
+    },
+    "study": {"type": "string", "minLength": 1, "description": "Short identifier of the study."},
+    "research_questions": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "description": "Ids of the research questions the batteries attached to this study answer."
+    },
+    "statistical_questions": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "description": "Ids of the computable statistical questions derived from the research questions."
+    },
+    "protocol_version": {"type": "string", "minLength": 1, "description": "Version of the protocol the data were produced under."},
+    "datasets": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/dataset"}},
+    "evolution_log": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/evolution_entry"},
+      "description": "Every change to the plan or protocol after it was first fixed, with the reason. Empty while nothing has changed."
+    }
+  },
+  "$defs": {
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "format", "origin", "dictionary", "provenance"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "description": "Unique within the manifest; `compare` pairs datasets of two manifests by this id."},
+        "path": {"type": "string", "minLength": 1, "description": "Data file, relative to the manifest."},
+        "format": {"enum": ["csv", "tsv"]},
+        "origin": {"enum": ["simulated-null", "simulated-effect", "pilot", "real"]},
+        "dictionary": {
+          "type": ["object", "string"],
+          "minLength": 1,
+          "if": {"type": "object"},
+          "then": {"$ref": "#/$defs/dictionary"},
+          "description": "The data dictionary inline, or the path (relative to the manifest) of a JSON file holding it."
+        },
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "dictionary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["variables"],
+      "properties": {
+        "variables": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/variable"}}
+      }
+    },
+    "variable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "role", "description"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "description": "Column header, exactly as in the file."},
+        "type": {"enum": ["integer", "number", "string"]},
+        "units": {"type": "string", "minLength": 1, "description": "Required for integer and number variables, checked by the script; the word unitless when there are none."},
+        "allowed_values": {
+          "type": "array", "minItems": 1,
+          "items": {"type": ["string", "number"]},
+          "description": "The only values the column may hold (outside missing codes)."
+        },
+        "range": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "prefixItems": [{"type": "number"}, {"type": "number"}],
+          "description": "[min, max], inclusive; for integer and number variables."
+        },
+        "missing_codes": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Cell contents that mean 'no value' for this variable; any other missing-looking cell is a problem."
+        },
+        "role": {"enum": ["id", "factor", "outcome", "covariate"]},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instrument", "dates"],
+      "properties": {
+        "code_commit": {"type": "string", "minLength": 1, "description": "Commit of the code that produced or processed the data."},
+        "seeds": {"type": "array", "items": {"type": "integer"}, "description": "Random seeds, for simulated data."},
+        "instrument": {"type": "string", "minLength": 1, "description": "What produced the data: a device, a survey, a simulator and its version."},
+        "dates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+            "end": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"}
+          },
+          "description": "When the data were collected or generated, as YYYY-MM-DD."
+        }
+      }
+    },
+    "evolution_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "change", "reason"],
+      "properties": {
+        "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "change": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

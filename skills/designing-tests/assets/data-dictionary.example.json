@@ -1,0 +1,43 @@
+{
+  "variables": [
+    {
+      "name": "subject_id",
+      "type": "integer",
+      "units": "unitless",
+      "role": "id",
+      "description": "Participant identifier, one row per participant."
+    },
+    {
+      "name": "group",
+      "type": "string",
+      "allowed_values": ["control", "treated"],
+      "role": "factor",
+      "description": "Arm the participant was randomised to."
+    },
+    {
+      "name": "age_years",
+      "type": "integer",
+      "units": "years",
+      "range": [18, 90],
+      "role": "covariate",
+      "description": "Age at enrolment."
+    },
+    {
+      "name": "dose_mg",
+      "type": "number",
+      "units": "mg",
+      "range": [0, 50],
+      "missing_codes": ["NA"],
+      "role": "covariate",
+      "description": "Dose actually taken; NA when the diary entry is missing."
+    },
+    {
+      "name": "reaction_ms",
+      "type": "number",
+      "units": "ms",
+      "range": [0, 5000],
+      "role": "outcome",
+      "description": "Mean reaction time over the test block."
+    }
+  ]
+}
