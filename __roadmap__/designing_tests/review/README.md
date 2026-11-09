@@ -18,8 +18,8 @@ Find what is wrong in the merged skill and get it fixed by the leaf that owns it
 ## Status
 ```mermaid
 graph TD
-    consistency_review[Consistency review]:::inprogress
-    statistics_review[Statistics review]:::inprogress
+    consistency_review[Consistency review]:::done
+    statistics_review[Statistics review]:::done
     wiring[Wiring]:::planned
     classDef done       fill:#166534,color:#bbf7d0
     classDef inprogress fill:#854d0e,color:#fef08a
@@ -31,8 +31,8 @@ graph TD
 ## Nodes
 | Node | Type | Status |
 |:-----|:-----|:-------|
-| `consistency_review.md` | 📄 Leaf Task | 🔄 In Progress |
-| `statistics_review.md` | 📄 Leaf Task | 🔄 In Progress |
+| `consistency_review.md` | 📄 Leaf Task | ✅ Done |
+| `statistics_review.md` | 📄 Leaf Task | ✅ Done |
 | `wiring/` | 📁 Directory | ⬜ Planned |
 
 ## Amendment Log
