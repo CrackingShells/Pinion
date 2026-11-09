@@ -7,12 +7,15 @@
 
 Run it, do not read it:
 
-    uv run scripts/study_contract.py init <data.csv|data.tsv ...> [--out study-manifest.json]
-    uv run scripts/study_contract.py check <manifest.json>
-    uv run scripts/study_contract.py compare <a.json> <b.json>
+    uv run <skill-dir>/scripts/study_contract.py init <data.csv|data.tsv ...> [--out study-manifest.json]
+    uv run <skill-dir>/scripts/study_contract.py check <manifest.json>
+    uv run <skill-dir>/scripts/study_contract.py compare <a.json> <b.json>
+
+where <skill-dir> is the skill's base directory.
 
 It serves three problems and nothing else: swapping a dataset under an existing battery
-(`check`), telling whether two studies are comparable (`compare`), and starting a manifest
+(`check`), telling whether two studies' contracts are comparable (`compare`, which never
+opens data), and starting a manifest
 from a data file's header (`init`). It chooses no test and runs no analysis.
 
 Output: `check` prints `RESULT=OK` or `RESULT=PROBLEMS n`; `compare` prints
@@ -26,6 +29,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
 import re
 import sys
@@ -46,9 +50,16 @@ PLACEHOLDER = "TODO"
 # at. A sentinel such as -999 is not listed: it is caught only through a declared range.
 COMMON_MISSING_TOKENS = {"", "NA", "N/A", "NaN", "nan", "null", "NULL", "None", "."}
 
-# Findings of one kind in one variable are reported once, with this many examples,
+# Problems of one kind in one variable are reported once, with this many examples,
 # so that a column of 10 000 bad cells does not bury the other problems.
 MAX_EXAMPLES = 3
+
+# A factor with no allowed_values is reported with the levels found in the file, so the
+# author can copy them; a column with many distinct values is not a factor, so stop here.
+LEVELS_SHOWN = 10
+
+# Origins whose data come from a program; they cannot be regenerated without seeds.
+SIMULATED_ORIGINS = ("simulated-null", "simulated-effect")
 
 DELIMITERS = {"csv": ",", "tsv": "\t"}
 NUMERIC_TYPES = ("integer", "number")
@@ -160,6 +171,16 @@ def parse_cell(cell, type_name):
     return (True, float(cell)) if NUMBER_RE.fullmatch(cell) else (False, None)
 
 
+def is_missing(cell, codes):
+    return cell in codes or cell in COMMON_MISSING_TOKENS or not cell.strip()
+
+
+def is_not_finite(cell):
+    if NUMBER_RE.fullmatch(cell):
+        return not math.isfinite(float(cell))
+    return cell.lower().lstrip("+-") in ("inf", "infinity")
+
+
 def examples(items):
     shown = ", ".join(f"line {line} {cell!r}" for line, cell in items[:MAX_EXAMPLES])
     return shown + (f" (+{len(items) - MAX_EXAMPLES} more)" if len(items) > MAX_EXAMPLES else "")
@@ -175,21 +196,45 @@ def check_dataset(dataset, dictionary, base):
 
     for name in dict.fromkeys(n for n in names if names.count(n) > 1):
         problems.append(f"{label}: variable {name!r} is declared twice in the dictionary")
+    if dataset["unit"] not in by_name:
+        problems.append(f"{label}: unit {dataset['unit']!r} is not a variable in the dictionary; "
+                        f"dictionary has: {', '.join(names)}")
+    for role, advice in (("id", "the id variables jointly key the rows and that combination must not repeat "
+                                "(for repeated measures: id = subject + time, unit = subject)"),
+                         ("outcome", "name the variable(s) the battery tests")):
+        if not any(v["role"] == role for v in variables):
+            problems.append(f"{label}: no variable has role {role}; {advice}")
+    if dataset["origin"] in SIMULATED_ORIGINS and not dataset["provenance"].get("seeds"):
+        problems.append(f"{label}: origin {dataset['origin']!r} requires provenance.seeds with at least "
+                        f"one seed, or the dataset cannot be regenerated")
+    valid_range = {}
     for var in variables:
         if var["type"] in NUMERIC_TYPES and "units" not in var:
             problems.append(f"{label}: variable {var['name']!r} is numeric but declares no units; "
                             f'add "units" with its unit, or "unitless"')
+        if "range" in var:
+            low, high = var["range"]
+            if var["type"] not in NUMERIC_TYPES:
+                problems.append(f"{label}: variable {var['name']!r} is a string but declares a range; "
+                                f"range applies to integer and number variables (use allowed_values)")
+            elif low > high:
+                problems.append(f"{label}: variable {var['name']!r} has range {json.dumps(var['range'])}: "
+                                f"min is greater than max")
+            else:
+                valid_range[var["name"]] = (low, high)
 
     path = base / dataset["path"]
     if not path.is_file():
         return problems + [f"{label}: file {dataset['path']} not found (looked for {path})"], 0
-    with open(path, newline="", encoding="utf-8") as fh:
+    with open(path, newline="", encoding="utf-8-sig") as fh:
         reader = csv.reader(fh, delimiter=DELIMITERS[dataset["format"]])
         header = next(reader, None)
         if header is None:
             return problems + [f"{label}: file {dataset['path']} is empty; expected a header line "
                                f"with: {', '.join(names)}"], 0
         rows = [(reader.line_num, row) for row in reader if row]
+    if not rows:
+        problems.append(f"{label}: file {dataset['path']} has a header but no data rows")
 
     for name in dict.fromkeys(c for c in header if header.count(c) > 1):
         problems.append(f"{label}: column {name!r} appears twice in the header")
@@ -222,15 +267,18 @@ def check_dataset(dataset, dictionary, base):
             cell = row[position]
             if cell in codes:
                 continue
-            if cell in COMMON_MISSING_TOKENS:
+            if cell in COMMON_MISSING_TOKENS or not cell.strip():
                 found["missing", name].append((line, cell))
+                continue
+            if var["type"] in NUMERIC_TYPES and is_not_finite(cell):
+                found["finite", name].append((line, cell))
                 continue
             ok, value = parse_cell(cell, var["type"])
             if not ok:
                 found["type", name].append((line, cell))
             elif "allowed_values" in var and value not in allowed:
                 found["set", name].append((line, cell))
-            elif var["type"] in NUMERIC_TYPES and "range" in var and not var["range"][0] <= value <= var["range"][1]:
+            elif name in valid_range and not valid_range[name][0] <= value <= valid_range[name][1]:
                 found["range", name].append((line, cell))
 
     for (kind, name), items in found.items():
@@ -240,12 +288,31 @@ def check_dataset(dataset, dictionary, base):
         elif kind == "set":
             problems.append(f"{head} value(s) outside the allowed values ({', '.join(map(str, var['allowed_values']))}), "
                             f"e.g. {examples(items)}")
+        elif kind == "finite":
+            problems.append(f"{head} value(s) not finite, e.g. {examples(items)}")
         elif kind == "range":
             problems.append(f"{head} value(s) outside range {json.dumps(var['range'])}, e.g. {examples(items)}")
         else:
             declared = ", ".join(map(repr, var.get("missing_codes", []))) or "none"
             problems.append(f"{head} undeclared missing value(s), e.g. {examples(items)}; declare the code "
                             f"in missing_codes (declared for this variable: {declared})")
+
+    for var in variables:
+        if var["role"] == "factor" and "allowed_values" not in var:
+            levels = list(dict.fromkeys(
+                row[index[var["name"]]] for _, row in rows
+                if var["name"] in index and index[var["name"]] < len(row)
+                and not is_missing(row[index[var["name"]]], var.get("missing_codes", []))))
+            shown = ", ".join(levels[:LEVELS_SHOWN]) + (f" (+{len(levels) - LEVELS_SHOWN} more)"
+                                                       if len(levels) > LEVELS_SHOWN else "")
+            problems.append(f"{label}: factor {var['name']!r} has no allowed_values; levels found in the file: "
+                            f"{shown or 'none'}; list the levels the battery may rely on")
+        if var["role"] == "outcome" and rows and var["name"] in index:
+            position = index[var["name"]]
+            if all(position >= len(row) or is_missing(row[position], var.get("missing_codes", []))
+                   for _, row in rows):
+                problems.append(f"{label}: outcome {var['name']!r} is entirely missing; "
+                                f"nothing can be tested on it")
 
     id_columns = [n for n in dict.fromkeys(names) if by_name[n]["role"] == "id" and n in index]
     if id_columns:
@@ -296,6 +363,13 @@ def show(value):
     return json.dumps(value)
 
 
+def comparable(field, value):
+    """Allowed values are a set: the order they are listed in does not change the shape."""
+    if field == "allowed_values" and isinstance(value, list):
+        return sorted(json.dumps(v) for v in value)
+    return value
+
+
 def cmd_compare(args):
     schema = load_schema()
     studies = []
@@ -321,6 +395,10 @@ def cmd_compare(args):
         vars_a = {v["name"]: v for v in dicts_a[dataset_id]["variables"]}
         vars_b = {v["name"]: v for v in dicts_b[dataset_id]["variables"]}
         where = f"dataset {dataset_id!r}"
+        unit_a = next(d["unit"] for d in a["datasets"] if d["id"] == dataset_id)
+        unit_b = next(d["unit"] for d in b["datasets"] if d["id"] == dataset_id)
+        if unit_a != unit_b:
+            differences.append(f"{where}: unit: {show(unit_a)} in A, {show(unit_b)} in B")
         for name in vars_a.keys() - vars_b.keys():
             differences.append(f"{where}: variable {name!r} only in A (B has: {', '.join(vars_b)})")
         for name in vars_b.keys() - vars_a.keys():
@@ -328,7 +406,7 @@ def cmd_compare(args):
         for name in (n for n in vars_a if n in vars_b):
             fields = (vars_a[name].keys() | vars_b[name].keys()) - {"name", "description"}
             for field in sorted(fields):
-                if vars_a[name].get(field) != vars_b[name].get(field):
+                if comparable(field, vars_a[name].get(field)) != comparable(field, vars_b[name].get(field)):
                     differences.append(f"{where}: variable {name!r} {field}: "
                                        f"{show(vars_a[name].get(field))} in A, {show(vars_b[name].get(field))} in B")
     if differences:
@@ -353,7 +431,7 @@ def cmd_init(args):
                              f"{', '.join('.' + f for f in DELIMITERS)}")
         if not path.is_file():
             raise UsageError(f"{name}: no such file")
-        with open(path, newline="", encoding="utf-8") as fh:
+        with open(path, newline="", encoding="utf-8-sig") as fh:
             header = next(csv.reader(fh, delimiter=DELIMITERS[file_format]), None)
         if not header:
             raise UsageError(f"{name}: the file is empty; expected a header line with the column names")
@@ -362,6 +440,7 @@ def cmd_init(args):
             "path": Path(os.path.relpath(path, out.resolve().parent)).as_posix(),
             "format": file_format,
             "origin": PLACEHOLDER,
+            "unit": PLACEHOLDER,
             "dictionary": {"variables": [
                 {"name": column, "type": PLACEHOLDER, "role": PLACEHOLDER, "description": PLACEHOLDER}
                 for column in header]},
@@ -382,7 +461,8 @@ def cmd_init(args):
     }
     out.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {out} with {len(datasets)} dataset(s); replace every {PLACEHOLDER!r}, add units, "
-          f"allowed values, ranges and missing codes, then run: uv run scripts/study_contract.py check {out}")
+          f"allowed values, ranges and missing codes, then run: uv run <skill-dir>/scripts/study_contract.py check {out} "
+          f"(<skill-dir> is the skill's base directory)")
     return EXIT_OK
 
 

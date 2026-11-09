@@ -6,59 +6,63 @@ Run from the repository root, either way:
     uv run --with pytest --with jsonschema pytest skills/designing-tests/evals/ -q
     uv run --with pytest --with jsonschema skills/designing-tests/evals/test_study_contract.py
 
-`evals/` is excluded from packaging; this file is a maintainer check.
+`evals/` is not part of the packaged skill.
 
 # What must keep working (guards)
 
 Scope of every guard: the CLI, through its consumer's interface, a subprocess on
 `sys.executable` running the script. The consumer is an agent that reads the first
 line (`RESULT=...`), the exit code and the messages, so nothing here imports the
-script. The expected values below are written by hand from the fixtures, never
-computed by the script's own helpers.
+script. Expected values are written by hand from the fixtures, never computed by the
+script's own helpers. Every problem below is a problem, never a warning, so that
+`RESULT=OK` keeps one meaning.
 
 | Behavior | Bug it catches |
 |---|---|
-| `check` accepts a dataset that conforms to its dictionary (declared missing codes, values on both range bounds, `10.0` for an allowed 10), with the dictionary by path or inline, and prints `RESULT=OK`, exit 0 | a validator that rejects declared missing codes; an exclusive range bound; numeric allowed values compared as text; a dictionary-by-path that is never loaded; a constant `RESULT=OK` |
+| `check` accepts a dataset that conforms to its dictionary (declared missing codes, values on both range bounds, a range whose bounds coincide, `10.0` for an allowed 10, a BOM at the start of the file), with the dictionary by path or inline, a filled evolution log, and prints `RESULT=OK`, exit 0 | a validator that rejects declared missing codes; an exclusive range bound; numeric allowed values compared as text; a BOM read as part of the first header; a dictionary-by-path that is never loaded; a constant `RESULT=OK` |
 | `check` reports a missing column, an extra column, a repeated header, a ragged row, a variable declared twice | column comparison done one-way or by position; csv rows indexed past their end |
-| `check` reports values that break a type (integer given 29.5, number given text), leave the allowed set, or leave the range | `int` parsing via `float`; a range bound written exclusive; a set test dropped |
-| `check` reports a missing-looking cell (empty, NA) that the variable does not declare, and accepts it where declared | missing tokens accepted everywhere; declared codes ignored |
-| `check` reports duplicated ids | id test dropped, or run on the wrong role |
+| `check` reports values that break a type, leave the allowed set or the range, or are not finite (`inf`, `1e999`) | `int` parsing via `float`; an exclusive bound; a set test dropped; infinity accepted as a number |
+| `check` reports a missing-looking cell (empty, whitespace, NA) that the variable does not declare, and accepts it where declared | missing tokens accepted everywhere; whitespace-only cells treated as data |
+| `check` reports a dataset with no data rows, and an outcome that is entirely missing | a header-only file passing; an all-missing outcome passing |
+| `check` reports duplicated ids, and a dataset with no `id` variable, no `outcome` variable, or a `unit` that is not a variable | the duplicate test run on the wrong role or skipped without ids; a roleless dataset passing |
+| `check` reports a factor without `allowed_values`, naming the levels found in the file | factor levels left untyped |
+| `check` reports a `range` on a non-numeric variable and a range whose min exceeds its max, once each | range ignored on strings; an inverted range applied to every cell |
 | `check` reports a numeric variable with no units | units optional by accident; the check applied to string variables |
-| `check` reports a contract_version other than the schema's, a dataset file that is absent or empty, a dictionary file that cannot be read, a manifest that is not an object, a repeated dataset id, a manifest breaking the schema (naming the allowed keys), and a manifest still holding the scaffold's TODO | the version read from nowhere; a missing or unreadable file crashing with a traceback; compare pairing the wrong datasets; schema errors swallowed; a scaffold that passes unfilled |
+| `check` reports a simulated dataset without seeds | simulated data that cannot be regenerated |
+| `check` reports a contract_version other than the schema's, a dataset file that is absent or empty, a dictionary file that cannot be read, a manifest that is not an object, a repeated dataset id, a manifest breaking the schema (naming the allowed keys, requiring `unit` and the six evolution-log fields), and a manifest still holding the scaffold's TODO | the version read from nowhere; a missing or unreadable file crashing with a traceback; compare pairing the wrong datasets; schema errors swallowed; a scaffold that passes unfilled |
 | `check` counts each problem once in `RESULT=PROBLEMS n` | a count of 1 or of lines of output |
-| `compare` says SWAPPABLE when the dictionaries agree, whatever differs in path, origin, provenance, study, descriptions, evolution log or variable order | metadata or order treated as shape |
-| `compare` says DIFFERS with the exact difference: variable added or removed, changed type, units, range, allowed values, missing codes, role, protocol or contract version, dataset added or removed | one field left out of the comparison; the result computed from the first variable only |
+| `compare` says SWAPPABLE when the dictionaries, units and versions agree, whatever differs in path, origin, provenance, study, descriptions, evolution log, variable order or the order of allowed values; it never opens a data file | metadata or order treated as shape; data read |
+| `compare` says DIFFERS with the exact difference: variable added or removed, changed type, units, range, allowed values, missing codes, role, unit of the dataset, protocol or contract version, dataset added or removed | one field left out of the comparison; the result computed from the first variable only |
 | `init` writes a manifest whose dictionary lists the header columns in order, takes the format from the extension, and refuses to overwrite a file | header read from the wrong line or delimiter; a filled-in manifest destroyed by a rerun |
 | `init`'s manifest is flagged by `check` until filled, and passes once filled | a scaffold `check` cannot tell from a finished one, or one no valid manifest can be made from |
+| `init` drops a byte-order mark from the first variable name | a BOM read as part of the name |
 | a bad argument (unknown flag or subcommand, missing or unreadable input, unsupported extension, empty data file) exits 64 with a message | argparse's exit 2; an unreadable file crashing |
 
 # Open questions (probes)
 
-None left. Answered while writing: csv rows are read with the standard `csv` module;
-a manifest's relative paths resolve against the manifest's directory.
+None. Csv rows are read with the standard `csv` module; a manifest's relative paths
+resolve against the manifest's directory.
 
 # Trust boundaries and fixtures
 
-The script reads files we do not own (a manifest and CSVs written by other agents),
-so malformed input is the main case. `fixtures/trial.csv` and `fixtures/manifest.json`
-hold one conforming study; its dictionary is the shipped
-`assets/data-dictionary.example.json`, so the example is exercised as a consumer
-uses it. Each guard lays the study out in a temporary directory and changes exactly
-one thing.
+The script reads files written by other agents (a manifest and CSVs), so malformed
+input is the main case. `fixtures/trial.csv` and `fixtures/manifest.json` hold one
+conforming study; its dictionary is the shipped `assets/data-dictionary.example.json`,
+so the example is exercised as a consumer uses it. Each guard lays the study out in a
+temporary directory and changes exactly one thing.
 
 # Deliberately not tested
 
-- The schema's own wording (jsonschema's messages): trusted library; one guard checks
+- The schema's own wording (jsonschema's messages): a trusted library; guards check
   that a schema error reaches the agent and names the allowed keys.
 - Large files and encodings other than UTF-8: the contract does not promise them.
-- `range` on a string variable and `allowed_values` of mixed types: the script ignores
-  `range` on strings; nothing relies on either.
+- Single-level factors and unbalanced groups: whether they break a test depends on the
+  battery, so `check` does not judge them.
 - Running `--help`: argparse's own behavior.
 
 # Done when
 
-Each guard has been seen failing against an injected bug (the maintainer's mutation
-record), and the suite passes on the shipped script.
+Each guard has been seen failing against an injected bug, and the suite passes.
 """
 
 from __future__ import annotations
@@ -100,7 +104,7 @@ def variable(dictionary, name):
 def lay_out(root, csv=None, edit_dictionary=None, edit_manifest=None):
     """Write the conforming study into `root`, apply the one change, return the manifest path."""
     root.mkdir(parents=True, exist_ok=True)
-    (root / "trial.csv").write_text(BASE_CSV if csv is None else csv)
+    (root / "trial.csv").write_text(BASE_CSV if csv is None else csv, encoding="utf-8")
     dictionary = json.loads(EXAMPLE_DICTIONARY.read_text())
     if edit_dictionary:
         edit_dictionary(dictionary)
@@ -111,6 +115,13 @@ def lay_out(root, csv=None, edit_dictionary=None, edit_manifest=None):
     path = root / "manifest.json"
     path.write_text(json.dumps(manifest))
     return path
+
+
+FILLED_ENTRY = {
+    "date": "2026-04-01", "stage": "after a pilot", "change": "dose capped at 50 mg",
+    "reason": "pilot showed doses above 50 mg were unsafe", "agreed_by": "principal investigator",
+    "effect_on_claim": "none: the dose range was exploratory",
+}
 
 
 def first_line(proc):
@@ -146,6 +157,28 @@ def test_check_matches_numeric_allowed_values_by_number_not_by_spelling(tmp_path
 
     spelled_differently = swap(BASE_CSV, "29,10,350.2", "29,10.0,350.2")
     proc = run("check", lay_out(tmp_path, csv=spelled_differently, edit_dictionary=only_zero_or_ten), cwd=tmp_path)
+    assert first_line(proc) == "RESULT=OK", proc.stdout + proc.stderr
+
+
+def test_check_reads_a_file_that_starts_with_a_byte_order_mark(tmp_path):
+    proc = run("check", lay_out(tmp_path, csv="\ufeff" + BASE_CSV), cwd=tmp_path)
+    assert first_line(proc) == "RESULT=OK", proc.stdout + proc.stderr
+
+
+def test_check_accepts_a_range_whose_bounds_coincide(tmp_path):
+    def only_zero(dictionary):
+        variable(dictionary, "dose_mg")["range"] = [0, 0]
+
+    all_zero = swap(BASE_CSV, "29,10,350.2", "29,0,350.2")
+    proc = run("check", lay_out(tmp_path, csv=all_zero, edit_dictionary=only_zero), cwd=tmp_path)
+    assert first_line(proc) == "RESULT=OK", proc.stdout + proc.stderr
+
+
+def test_check_accepts_a_filled_evolution_log(tmp_path):
+    def log_one_change(manifest):
+        manifest["evolution_log"] = [FILLED_ENTRY]
+
+    proc = run("check", lay_out(tmp_path, edit_manifest=log_one_change), cwd=tmp_path)
     assert first_line(proc) == "RESULT=OK", proc.stdout + proc.stderr
 
 
@@ -192,6 +225,18 @@ DATA_PROBLEMS = [
     pytest.param(swap(BASE_CSV, "341.7", ""), 1,
                  ["variable 'reaction_ms'", "undeclared missing", "line 5", "''", "missing_codes"],
                  id="undeclared-empty-cell"),
+    pytest.param(swap(BASE_CSV, "350.2", "1e999"), 1,
+                 ["variable 'reaction_ms'", "not finite", "line 4", "'1e999'"],
+                 id="not-finite-overflow"),
+    pytest.param(swap(BASE_CSV, "350.2", "inf"), 1,
+                 ["variable 'reaction_ms'", "not finite", "line 4", "'inf'"],
+                 id="not-finite-infinity"),
+    pytest.param(swap(BASE_CSV, "341.7", "  "), 1,
+                 ["variable 'reaction_ms'", "undeclared missing", "line 5", "'  '"],
+                 id="undeclared-whitespace-cell"),
+    pytest.param("subject_id,group,age_years,dose_mg,reaction_ms\n", 1,
+                 ["dataset 'trial'", "no data rows"],
+                 id="no-data-rows"),
     pytest.param(swap(BASE_CSV, "2,control", "1,control"), 1,
                  ["duplicated id", "subject_id = 1", "lines 2, 3"],
                  id="duplicate-id"),
@@ -206,12 +251,6 @@ def test_check_reports_each_data_problem_class(tmp_path, csv_text, count, fragme
     assert first_line(proc) == f"RESULT=PROBLEMS {count}", proc.stdout
     for fragment in fragments:
         assert fragment in proc.stdout, f"{fragment!r} not in:\n{proc.stdout}"
-
-
-def test_check_counts_each_problem_once(tmp_path):
-    two_problems = swap(swap(BASE_CSV, "4,treated", "4,placebo"), "29,10,350.2", "29,10,fast")
-    proc = run("check", lay_out(tmp_path, csv=two_problems), cwd=tmp_path)
-    assert first_line(proc) == "RESULT=PROBLEMS 2", proc.stdout
 
 
 # --- check: the dictionary and the manifest ----------------------------------
@@ -239,6 +278,62 @@ def _point_at_absent_file(manifest):
 
 def _point_at_absent_dictionary(manifest):
     manifest["datasets"][0]["dictionary"] = "absent-dictionary.json"
+
+
+def _reaction_may_be_missing(dictionary):
+    variable(dictionary, "reaction_ms")["missing_codes"] = ["NA"]
+
+
+def _group_has_no_allowed_values(dictionary):
+    del variable(dictionary, "group")["allowed_values"]
+
+
+def _no_id_role(dictionary):
+    variable(dictionary, "subject_id")["role"] = "covariate"
+
+
+def _no_outcome_role(dictionary):
+    variable(dictionary, "reaction_ms")["role"] = "covariate"
+
+
+def _unit_is_not_a_variable(manifest):
+    manifest["datasets"][0]["unit"] = "participant"
+
+
+def _unit_is_absent(manifest):
+    del manifest["datasets"][0]["unit"]
+
+
+def _range_on_a_string(dictionary):
+    variable(dictionary, "group")["range"] = [0, 1]
+
+
+def _range_upside_down(dictionary):
+    variable(dictionary, "dose_mg")["range"] = [50, 0]
+
+
+def _simulated_without_seeds(origin):
+    def edit(manifest):
+        manifest["datasets"][0]["origin"] = origin
+    return edit
+
+
+def _simulated_with_empty_seeds(manifest):
+    manifest["datasets"][0]["origin"] = "simulated-effect"
+    manifest["datasets"][0]["provenance"]["seeds"] = []
+
+
+def _log_entry_without(field):
+    def edit(manifest):
+        manifest["evolution_log"] = [{k: v for k, v in FILLED_ENTRY.items() if k != field}]
+    return edit
+
+
+ALL_OUTCOMES_NA_CSV = (
+    "subject_id,group,age_years,dose_mg,reaction_ms\n"
+    "1,control,34,0,NA\n2,control,51,0,NA\n3,treated,29,10,NA\n4,treated,62,NA,NA\n"
+)
+EVOLUTION_FIELDS = ["date", "stage", "change", "reason", "agreed_by", "effect_on_claim"]
 
 
 def _repeat_the_dataset_id(manifest):
@@ -270,6 +365,42 @@ STRUCTURE_PROBLEMS = [
     pytest.param(dict(edit_manifest=_repeat_the_dataset_id),
                  ["dataset id 'trial' is used twice"],
                  id="dataset-id-repeated"),
+    pytest.param(dict(csv=ALL_OUTCOMES_NA_CSV, edit_dictionary=_reaction_may_be_missing),
+                 ["outcome 'reaction_ms' is entirely missing"],
+                 id="outcome-entirely-missing"),
+    pytest.param(dict(edit_dictionary=_group_has_no_allowed_values),
+                 ["factor 'group' has no allowed_values", "levels found in the file: control, treated"],
+                 id="factor-without-allowed-values"),
+    pytest.param(dict(edit_dictionary=_no_id_role),
+                 ["no variable has role id", "jointly key"],
+                 id="no-id-variable"),
+    pytest.param(dict(edit_dictionary=_no_outcome_role),
+                 ["no variable has role outcome"],
+                 id="no-outcome-variable"),
+    pytest.param(dict(edit_manifest=_unit_is_not_a_variable),
+                 ["unit 'participant' is not a variable in the dictionary",
+                  "dictionary has: subject_id, group, age_years, dose_mg, reaction_ms"],
+                 id="unit-not-a-variable"),
+    pytest.param(dict(edit_manifest=_unit_is_absent),
+                 ["'unit' is a required property"],
+                 id="unit-absent"),
+    pytest.param(dict(edit_dictionary=_range_on_a_string),
+                 ["variable 'group'", "string", "range"],
+                 id="range-on-a-string"),
+    pytest.param(dict(edit_dictionary=_range_upside_down),
+                 ["variable 'dose_mg'", "range [50, 0]", "min"],
+                 id="range-min-above-max"),
+    pytest.param(dict(edit_manifest=_simulated_without_seeds("simulated-null")),
+                 ["simulated-null", "provenance.seeds"],
+                 id="simulated-null-without-seeds"),
+    pytest.param(dict(edit_manifest=_simulated_with_empty_seeds),
+                 ["simulated-effect", "provenance.seeds"],
+                 id="simulated-effect-with-empty-seeds"),
+] + [
+    pytest.param(dict(edit_manifest=_log_entry_without(field)),
+                 [f"'{field}' is a required property"],
+                 id=f"evolution-entry-without-{field}")
+    for field in EVOLUTION_FIELDS
 ]
 
 
@@ -294,7 +425,7 @@ def test_check_reports_a_manifest_that_is_not_an_object(tmp_path):
 def _everything_but_the_shape(manifest):
     manifest["study"] = "reaction-simulation"
     manifest["evolution_log"] = [
-        {"date": "2026-04-01", "change": "dose capped at 50 mg", "reason": "safety review"}
+        FILLED_ENTRY
     ]
     dataset = manifest["datasets"][0]
     dataset["path"] = "simulated.csv"
@@ -309,6 +440,7 @@ def _describe_differently_and_reorder(dictionary):
     for entry in dictionary["variables"]:
         entry["description"] = "rewritten " + entry["description"]
     dictionary["variables"].reverse()
+    variable(dictionary, "group")["allowed_values"].reverse()
 
 
 def test_compare_says_swappable_when_only_the_data_around_the_dictionary_differs(tmp_path):
@@ -317,6 +449,7 @@ def test_compare_says_swappable_when_only_the_data_around_the_dictionary_differs
                 edit_manifest=_everything_but_the_shape)
     proc = run("compare", a, b, cwd=tmp_path)
     assert (proc.returncode, first_line(proc)) == (0, "RESULT=SWAPPABLE"), proc.stdout + proc.stderr
+    assert not (tmp_path / "b" / "simulated.csv").exists(), "compare must not need the data"
 
 
 def _drop_group(dictionary):
@@ -361,6 +494,10 @@ def _new_contract(manifest):
     manifest["contract_version"] = 2
 
 
+def _unit_is_group(manifest):
+    manifest["datasets"][0]["unit"] = "group"
+
+
 def _renamed_dataset(manifest):
     manifest["datasets"][0]["id"] = "replication"
 
@@ -381,6 +518,8 @@ DIFFERENCES = [
                  ["variable 'dose_mg'", 'missing_codes: ["NA"] in A, ["NA", "-"] in B'], id="missing-codes-changed"),
     pytest.param(dict(edit_dictionary=_age_is_a_factor),
                  ["variable 'age_years'", 'role: "covariate" in A, "factor" in B'], id="role-changed"),
+    pytest.param(dict(edit_manifest=_unit_is_group),
+                 ["dataset 'trial'", 'unit: "subject_id" in A, "group" in B'], id="unit-changed"),
     pytest.param(dict(edit_manifest=_new_protocol),
                  ['protocol_version: "1.0" in A, "2.0" in B'], id="protocol-version-changed"),
     pytest.param(dict(edit_manifest=_new_contract),
@@ -406,15 +545,6 @@ def test_compare_reports_a_dataset_present_on_one_side_only(tmp_path):
     assert first_line(proc) == "RESULT=DIFFERS 2", proc.stdout
     assert "dataset 'trial' only in A" in proc.stdout
     assert "dataset 'replication' only in B" in proc.stdout
-
-
-def test_compare_counts_every_difference(tmp_path):
-    def two(dictionary):
-        _dose_in_grams(dictionary)
-        _dose_range_to_100(dictionary)
-
-    proc = run("compare", lay_out(tmp_path / "a"), lay_out(tmp_path / "b", edit_dictionary=two), cwd=tmp_path)
-    assert first_line(proc) == "RESULT=DIFFERS 2", proc.stdout
 
 
 def test_compare_refuses_a_manifest_that_breaks_the_schema(tmp_path):
@@ -454,6 +584,13 @@ def test_init_takes_format_and_delimiter_from_the_extension(
     assert [v["name"] for v in dataset["dictionary"]["variables"]] == expected_names
 
 
+def test_init_does_not_put_a_byte_order_mark_in_the_first_variable_name(tmp_path):
+    (tmp_path / "trial.csv").write_text("\ufeff" + BASE_CSV, encoding="utf-8")
+    run("init", "trial.csv", "--out", "study.json", cwd=tmp_path)
+    dataset = json.loads((tmp_path / "study.json").read_text())["datasets"][0]
+    assert dataset["dictionary"]["variables"][0]["name"] == "subject_id"
+
+
 def test_init_refuses_to_overwrite_an_existing_manifest(tmp_path):
     (tmp_path / "trial.csv").write_text(BASE_CSV)
     (tmp_path / "study.json").write_text("hand-filled work")
@@ -469,7 +606,7 @@ def test_check_flags_a_scaffolded_manifest_as_incomplete(tmp_path):
     proc = run("check", "study.json", cwd=tmp_path)
     assert proc.returncode == 1, proc.stdout + proc.stderr
     assert first_line(proc).startswith("RESULT=PROBLEMS")
-    for fragment in ["incomplete", "TODO", "study", "datasets/0/origin",
+    for fragment in ["incomplete", "TODO", "study", "datasets/0/origin", "datasets/0/unit",
                      "datasets/0/dictionary/variables/0/role"]:
         assert fragment in proc.stdout, f"{fragment!r} not in:\n{proc.stdout}"
 
@@ -484,6 +621,7 @@ def test_a_scaffolded_manifest_can_be_filled_into_one_that_check_accepts(tmp_pat
     manifest["protocol_version"] = "1.0"
     dataset = manifest["datasets"][0]
     dataset["origin"] = "pilot"
+    dataset["unit"] = "subject_id"
     dataset["provenance"] = {"instrument": "rig", "dates": {"start": "2026-03-02", "end": "2026-03-30"}}
     dataset["dictionary"] = json.loads(EXAMPLE_DICTIONARY.read_text())
     (tmp_path / "study.json").write_text(json.dumps(manifest))

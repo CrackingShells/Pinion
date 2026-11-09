@@ -35,7 +35,7 @@
     "dataset": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "path", "format", "origin", "dictionary", "provenance"],
+      "required": ["id", "path", "format", "origin", "dictionary", "unit", "provenance"],
       "properties": {
         "id": {"type": "string", "minLength": 1, "description": "Unique within the manifest; `compare` pairs datasets of two manifests by this id."},
         "path": {"type": "string", "minLength": 1, "description": "Data file, relative to the manifest."},
@@ -47,6 +47,10 @@
           "if": {"type": "object"},
           "then": {"$ref": "#/$defs/dictionary"},
           "description": "The data dictionary inline, or the path (relative to the manifest) of a JSON file holding it."
+        },
+        "unit": {
+          "type": "string", "minLength": 1,
+          "description": "Name of the dictionary variable whose levels are independent observations (a subject, a plate, a site). It may repeat across rows; the `id` variables, jointly, are what key the rows."
         },
         "provenance": {"$ref": "#/$defs/provenance"}
       }
@@ -92,7 +96,7 @@
       "required": ["instrument", "dates"],
       "properties": {
         "code_commit": {"type": "string", "minLength": 1, "description": "Commit of the code that produced or processed the data."},
-        "seeds": {"type": "array", "items": {"type": "integer"}, "description": "Random seeds, for simulated data."},
+        "seeds": {"type": "array", "items": {"type": "integer"}, "description": "Random seeds; required, and non-empty, when the origin is simulated-null or simulated-effect (checked by the script)."},
         "instrument": {"type": "string", "minLength": 1, "description": "What produced the data: a device, a survey, a simulator and its version."},
         "dates": {
           "type": "object",
@@ -109,11 +113,14 @@
     "evolution_entry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["date", "change", "reason"],
+      "required": ["date", "stage", "change", "reason", "agreed_by", "effect_on_claim"],
       "properties": {
         "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
-        "change": {"type": "string", "minLength": 1},
-        "reason": {"type": "string", "minLength": 1}
+        "stage": {"type": "string", "minLength": 1, "description": "Where the study stood: before any data, after a pilot or a simulation, after the data of this study were seen."},
+        "change": {"type": "string", "minLength": 1, "description": "The old and the new content, concretely."},
+        "reason": {"type": "string", "minLength": 1, "description": "What was learned that motivated it."},
+        "agreed_by": {"type": "string", "minLength": 1, "description": "Who agreed: the user, the parent agent, the agent that supplied the number."},
+        "effect_on_claim": {"type": "string", "minLength": 1, "description": "Which results remain confirmatory and which become exploratory."}
       }
     }
   }
