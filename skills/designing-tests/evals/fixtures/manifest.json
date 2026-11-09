@@ -1,0 +1,21 @@
+{
+  "contract_version": 1,
+  "study": "reaction-trial",
+  "research_questions": ["RQ1"],
+  "statistical_questions": ["SQ1.1"],
+  "protocol_version": "1.0",
+  "datasets": [
+    {
+      "id": "trial",
+      "path": "trial.csv",
+      "format": "csv",
+      "origin": "pilot",
+      "dictionary": "dictionary.json",
+      "provenance": {
+        "instrument": "lab reaction-time rig",
+        "dates": {"start": "2026-03-02", "end": "2026-03-30"}
+      }
+    }
+  ],
+  "evolution_log": []
+}

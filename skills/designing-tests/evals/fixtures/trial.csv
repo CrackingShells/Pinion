@@ -1,0 +1,5 @@
+subject_id,group,age_years,dose_mg,reaction_ms
+1,control,34,0,412.5
+2,control,51,0,398.0
+3,treated,29,10,350.2
+4,treated,62,NA,341.7
