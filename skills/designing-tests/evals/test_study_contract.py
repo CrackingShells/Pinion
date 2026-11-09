@@ -18,13 +18,13 @@ computed by the script's own helpers.
 
 | Behavior | Bug it catches |
 |---|---|
-| `check` accepts a dataset that conforms to its dictionary (declared missing codes included), with the dictionary by path or inline, and prints `RESULT=OK`, exit 0 | a validator that rejects declared missing codes; a dictionary-by-path that is never loaded; a constant `RESULT=OK` |
+| `check` accepts a dataset that conforms to its dictionary (declared missing codes, values on both range bounds, `10.0` for an allowed 10), with the dictionary by path or inline, and prints `RESULT=OK`, exit 0 | a validator that rejects declared missing codes; an exclusive range bound; numeric allowed values compared as text; a dictionary-by-path that is never loaded; a constant `RESULT=OK` |
 | `check` reports a missing column, an extra column, a repeated header, a ragged row, a variable declared twice | column comparison done one-way or by position; csv rows indexed past their end |
 | `check` reports values that break a type (integer given 29.5, number given text), leave the allowed set, or leave the range | `int` parsing via `float`; a range bound written exclusive; a set test dropped |
 | `check` reports a missing-looking cell (empty, NA) that the variable does not declare, and accepts it where declared | missing tokens accepted everywhere; declared codes ignored |
 | `check` reports duplicated ids | id test dropped, or run on the wrong role |
 | `check` reports a numeric variable with no units | units optional by accident; the check applied to string variables |
-| `check` reports a contract_version other than the schema's, a dataset file that is absent, a repeated dataset id, a manifest breaking the schema (naming the allowed keys), and a manifest still holding the scaffold's TODO | the version read from nowhere; a missing file crashing with a traceback; compare pairing the wrong datasets; schema errors swallowed; a scaffold that passes unfilled |
+| `check` reports a contract_version other than the schema's, a dataset file that is absent or empty, a dictionary file that cannot be read, a manifest that is not an object, a repeated dataset id, a manifest breaking the schema (naming the allowed keys), and a manifest still holding the scaffold's TODO | the version read from nowhere; a missing or unreadable file crashing with a traceback; compare pairing the wrong datasets; schema errors swallowed; a scaffold that passes unfilled |
 | `check` counts each problem once in `RESULT=PROBLEMS n` | a count of 1 or of lines of output |
 | `compare` says SWAPPABLE when the dictionaries agree, whatever differs in path, origin, provenance, study, descriptions, evolution log or variable order | metadata or order treated as shape |
 | `compare` says DIFFERS with the exact difference: variable added or removed, changed type, units, range, allowed values, missing codes, role, protocol or contract version, dataset added or removed | one field left out of the comparison; the result computed from the first variable only |
@@ -134,6 +134,21 @@ def test_check_accepts_a_conforming_dataset_with_the_dictionary_inline(tmp_path)
     assert (proc.returncode, first_line(proc)) == (0, "RESULT=OK"), proc.stdout + proc.stderr
 
 
+def test_check_accepts_values_on_both_range_bounds(tmp_path):
+    on_the_bounds = swap(swap(BASE_CSV, "34,0,412.5", "18,50,412.5"), "62,NA", "90,NA")
+    proc = run("check", lay_out(tmp_path, csv=on_the_bounds), cwd=tmp_path)
+    assert first_line(proc) == "RESULT=OK", proc.stdout + proc.stderr
+
+
+def test_check_matches_numeric_allowed_values_by_number_not_by_spelling(tmp_path):
+    def only_zero_or_ten(dictionary):
+        variable(dictionary, "dose_mg")["allowed_values"] = [0, 10]
+
+    spelled_differently = swap(BASE_CSV, "29,10,350.2", "29,10.0,350.2")
+    proc = run("check", lay_out(tmp_path, csv=spelled_differently, edit_dictionary=only_zero_or_ten), cwd=tmp_path)
+    assert first_line(proc) == "RESULT=OK", proc.stdout + proc.stderr
+
+
 # --- check: each problem class -----------------------------------------------
 
 NO_GROUP_CSV = (
@@ -222,6 +237,10 @@ def _point_at_absent_file(manifest):
     manifest["datasets"][0]["path"] = "nope.csv"
 
 
+def _point_at_absent_dictionary(manifest):
+    manifest["datasets"][0]["dictionary"] = "absent-dictionary.json"
+
+
 def _repeat_the_dataset_id(manifest):
     manifest["datasets"].append(dict(manifest["datasets"][0]))
 
@@ -242,6 +261,12 @@ STRUCTURE_PROBLEMS = [
     pytest.param(dict(edit_manifest=_point_at_absent_file),
                  ["nope.csv", "not found"],
                  id="dataset-file-absent"),
+    pytest.param(dict(edit_manifest=_point_at_absent_dictionary),
+                 ["absent-dictionary.json", "cannot read"],
+                 id="dictionary-file-absent"),
+    pytest.param(dict(csv=""),
+                 ["trial.csv is empty", "expected a header line with: subject_id"],
+                 id="data-file-empty"),
     pytest.param(dict(edit_manifest=_repeat_the_dataset_id),
                  ["dataset id 'trial' is used twice"],
                  id="dataset-id-repeated"),
@@ -255,6 +280,13 @@ def test_check_reports_each_dictionary_and_manifest_problem(tmp_path, changes, f
     assert first_line(proc) == "RESULT=PROBLEMS 1", proc.stdout
     for fragment in fragments:
         assert fragment in proc.stdout, f"{fragment!r} not in:\n{proc.stdout}"
+
+
+def test_check_reports_a_manifest_that_is_not_an_object(tmp_path):
+    (tmp_path / "manifest.json").write_text("[]")
+    proc = run("check", "manifest.json", cwd=tmp_path)
+    assert proc.returncode == 1 and first_line(proc).startswith("RESULT=PROBLEMS"), proc.stdout + proc.stderr
+    assert "not of type 'object'" in proc.stdout
 
 
 # --- compare -----------------------------------------------------------------
