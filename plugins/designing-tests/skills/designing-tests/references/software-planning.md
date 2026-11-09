@@ -14,7 +14,7 @@ a number.
 ## Where guards come from
 
 Start from risk, not from functions. Walking the function list produces one test per function,
-which is a map of the code and says nothing about what must keep working. Three sources give
+which is a map of the code and says nothing about what the software must do. Three sources give
 candidates worth a guard:
 
 1. **Behaviors consumers rely on.** For each consumer (a caller, a user, another service, a
@@ -88,7 +88,7 @@ and the apostrophe row stays only if the existing rows did not cover its class.
 A software test plan is defined by what it must establish, not by a template. Write it in the
 form the project already uses and make sure each of these is answered:
 
-- **What must keep working: the guards.** Each with its expected behavior, its scope with the
+- **What the software must do: the guards.** Each with its expected behavior, its scope with the
   consumer that justifies the scope, and the failure it catches (the plausible bug that turns it
   red).
 - **Open questions: the probes.** Each with the question and the decision it will feed. A probe

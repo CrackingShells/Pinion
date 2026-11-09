@@ -12,7 +12,9 @@ A test exists to answer a stated question, and it must be able to fail: a test t
 wrong outcome can turn red answers nothing and only lends false confidence. "Test" has two meanings
 here and one discipline behind both:
 
-- **software test**: asks whether the software still performs what it is relied on to perform;
+- **software test**: asks whether the code performs a behavior the software is relied on to
+  perform, and belongs to the feature that behavior defines, so it is written with it, before the
+  code exists;
 - **statistical test**: asks whether the data support a research question, and belongs to the
   experiment that produces the data, so it is designed with it, before the data exist.
 
@@ -25,7 +27,7 @@ lifetime; lifetime sets how much weight the result carries.
 
 | Role | Purpose | Lives | Weight of evidence |
 |---|---|---|---|
-| **guard** | Defines an expected behavior (a transformation or operation the software is relied on to perform, in its context) or, in science, the battery attached to a research question | Until the behavior is deliberately changed; until the question stops being relevant | Carries the claim: its result is the evidence |
+| **guard** | Defines an expected behavior (a transformation or operation the software is relied on to perform, in its context), written before the code that performs it, or, in science, the battery attached to a research question | Until the behavior is deliberately changed; until the question stops being relevant | Carries the claim: its result is the evidence |
 | **confirm** | Checks that one step toward a guard did what was meant | Until the step is done and a guard covers it; then culled | Local reassurance only, never the claim |
 | **probe** | Answers a question that decides how to proceed | Until it is answered; the answer is recorded, the test is not kept | Informs a decision, never confirms anything |
 

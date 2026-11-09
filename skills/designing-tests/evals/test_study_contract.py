@@ -6,7 +6,7 @@ Run from the skill directory, either way:
     uv run --with pytest --with jsonschema pytest evals/ -q
     uv run --with pytest --with jsonschema evals/test_study_contract.py
 
-# What must keep working (guards)
+# What the script must do (guards)
 
 Scope of every guard: the CLI, through its consumer's interface, a subprocess on
 `sys.executable` running the script. The consumer is an agent that reads the first

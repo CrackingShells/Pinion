@@ -22,7 +22,7 @@ how long would that loss matter?
 
 | Role | Purpose | Lifetime | Where it lives |
 |---|---|---|---|
-| Guard | Defines an *expected behavior* of the software: a transformation or operation it is relied on to perform in its context, including the cornerstones of the design that everything else builds on | Until that behavior is deliberately changed | In the suite, permanently |
+| Guard | Defines an *expected behavior* of the software, written before the code that performs it: a transformation or operation it is relied on to perform in its context, including the cornerstones of the design that everything else builds on | Until that behavior is deliberately changed | In the suite, permanently |
 | Confirm | Checks that one step toward a guard did what was meant (a block behaves, a helper parses) | Until the step is done and a guard covers it | In the suite while the work is in progress, marked by the project's own means (marker, name, tag) so culling is mechanical |
 | Probe | Answers a question during the work (does this library retry? which index is faster? what does this endpoint return on an empty page?) | Until it is answered | Outside the suite; the answer goes where decisions are recorded |
 
@@ -70,7 +70,7 @@ combination looks like in practice, not a list of the only cases.
 **Probe.** Write the question and the decision it feeds before running it. When it answers, record
 the answer where decisions are kept (the plan, the design note, a comment at the decision), then
 delete the probe. If the design now relies on what the probe found about code the project does not own, a
-behavior of that code has become part of what must keep working. Rewrite the probe as a **boundary
+behavior of that code has become an expected behavior of the design. Rewrite the probe as a **boundary
 guard** at the seam, under guard standards (see `software-writing.md`). An upgrade needs that
 reliance; curiosity is not enough.
 
