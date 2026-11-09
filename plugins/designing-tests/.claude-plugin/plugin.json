@@ -1,0 +1,21 @@
+{
+  "name": "designing-tests",
+  "displayName": "Designing Tests",
+  "version": "0.0.0",
+  "description": "Designs software tests and statistical tests before they are written, so each answers a stated question and can fail.",
+  "author": {
+    "name": "Eliott Jacopin",
+    "email": "eliott.jacopin@riken.jp"
+  },
+  "homepage": "https://github.com/CrackingShells/Pinion",
+  "repository": "https://github.com/CrackingShells/Pinion",
+  "license": "AGPL-3.0-or-later",
+  "keywords": [
+    "testing",
+    "tdd",
+    "statistics",
+    "experiment-design",
+    "agents"
+  ],
+  "skills": "./skills/"
+}

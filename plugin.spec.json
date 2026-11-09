@@ -32,6 +32,16 @@
       "skills": "./skills/",
       "keywords": ["background", "monitor", "processes", "agents"],
       "codex": { "category": "Developer Tools" }
+    },
+    {
+      "name": "designing-tests",
+      "dir": "plugins/designing-tests",
+      "displayName": "Designing Tests",
+      "description": "Designs software tests and statistical tests before they are written, so each answers a stated question and can fail.",
+      "version_from": "package.json:skills/designing-tests/package.json",
+      "skills": "./skills/",
+      "keywords": ["testing", "tdd", "statistics", "experiment-design", "agents"],
+      "codex": { "category": "Developer Tools" }
     }
   ]
 }
