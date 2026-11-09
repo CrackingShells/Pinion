@@ -31,8 +31,8 @@ Treat each as a question the plan must be able to answer, not a box to fill.
   from the design, simulation, diagnostic, cited result), and what the check showed. A plan that
   lists conditions without evidence has only moved the assumption.
 - **Protocol and cohort.** Establishes what was done to whom and why the data can answer the
-  question: unit, replicates, pairing and blocking, randomization, blinding, controls, inclusion
-  and exclusion, allocation. It is where the validity of the tests is rooted. See
+  question: unit, replicates, clusters, pairing and blocking, repeated time points, event and
+  censoring status, randomization, blinding, controls, inclusion and exclusion, allocation. It is where the validity of the tests is rooted. See
   [science-protocol-and-sample.md](science-protocol-and-sample.md).
 - **Sample size, budget and their assumptions, with who agreed them.** Establishes that the study
   can answer the question at the cost agreed. Includes the effect it is powered for, the

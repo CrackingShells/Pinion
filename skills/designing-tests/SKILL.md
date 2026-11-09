@@ -207,7 +207,7 @@ Files that are not references:
 
 - `scripts/study_contract.py`: **run it, do not read it**, as `uv run <skill-dir>/scripts/study_contract.py`. `check` validates a manifest and its
   datasets, `init` scaffolds a manifest and dictionary from CSV headers, `compare` says whether two
-  manifests are swappable. Details in [science-data](references/science-data.md).
+  manifests are swappable (it compares the contracts, units included, and never opens data). Details in [science-data](references/science-data.md).
 - `assets/study-contract.schema.json`: the manifest schema. **Read it** when completing a manifest;
   do not copy it.
 - `assets/data-dictionary.example.json`: a filled dictionary. **Copy it** as a starting shape for a
