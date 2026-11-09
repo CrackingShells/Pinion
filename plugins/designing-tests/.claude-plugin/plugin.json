@@ -1,7 +1,7 @@
 {
   "name": "designing-tests",
   "displayName": "Designing Tests",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Designs software tests and statistical tests before they are written, so each answers a stated question and can fail.",
   "author": {
     "name": "Eliott Jacopin",

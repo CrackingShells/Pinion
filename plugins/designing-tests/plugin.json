@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "designing-tests",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Designs software tests and statistical tests before they are written, so each answers a stated question and can fail.",
   "author": {
     "name": "Eliott Jacopin",
