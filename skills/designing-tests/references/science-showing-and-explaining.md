@@ -31,7 +31,7 @@ do it.
 4. **Show every unit.** Draw each unit (each animal, participant, run, seed) behind the summary:
    points, a strip or a beeswarm, a connected line per pair, small multiples when there are many.
    Summaries alone (a bar of means, a line with an error bar) can show the same picture for very
-   different distributions (Weissgerber et al. 2015, PLOS Biology).
+   different distributions (Weissgerber et al. 2015, PLOS Biology 13:e1002128, doi:10.1371/journal.pbio.1002128).
 5. **Plot the effect with its uncertainty against the lines from step 1.** The estimate and its
    interval, on the scale of the estimand, with the lines drawn. An inconclusive result then looks
    inconclusive: the interval spans a line that decides. Say in the caption what the interval is

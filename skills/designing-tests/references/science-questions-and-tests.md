@@ -55,7 +55,10 @@ zero and the SESOI lines. A wholly beyond-SESOI interval supports a meaningful e
 that excludes zero but lies inside the SESOI band says an effect is detectable and too small to
 matter. An interval inside the band, with the equivalence test passed, is evidence against a
 meaningful effect. An interval that spans zero and reaches past the SESOI is inconclusive, however
-the p-value is phrased. For a battery, rows are combinations: primary test positive with the
+the p-value is phrased. State the interval level per row, because the two lines of reading use
+different intervals: the two-sided difference is read from the (1 - alpha) interval (95% at
+alpha = 5%), the equivalence test from the (1 - 2 alpha) interval (90% at alpha = 5%), and a row that
+mixes them says which line each claim uses. For a battery, rows are combinations: primary test positive with the
 robustness test negative reads differently from both positive, and the table says how.
 
 This is a sample of the shape, not the shape. A question about a curve, a ranking or a structure
@@ -77,8 +80,9 @@ Per statistical question, write H0 and H1 in terms of the estimand, not of the t
   equivalence or non-inferiority, and H0 flips: H0 is that the effect is at least as large as the
   margin. The two one-sided tests procedure (TOST) rejects both "effect below the lower margin" and
   "effect above the upper margin", each at level alpha; it is equivalent to the (1 - 2 alpha)
-  confidence interval lying inside the margins (Schuirmann 1987; Lakens 2017, Social Psychological
-  and Personality Science). The margin is the SESOI or a stated tolerance, justified and agreed
+  confidence interval lying inside the margins (Schuirmann 1987, Journal of Pharmacokinetics and
+  Biopharmaceutics 15:657-680, doi:10.1007/BF01068419; Lakens 2017, Social Psychological and
+  Personality Science 8:355-362, doi:10.1177/1948550617697177). The margin is the SESOI or a stated tolerance, justified and agreed
   with the user, and fixed before the data. A margin chosen after seeing the interval proves
   nothing. Non-inferiority is the one-sided version, with a margin on one side only.
 - **Composite claims.** "A is better than B on speed and no worse on accuracy" is two statistical
@@ -113,15 +117,15 @@ grew without being useful.
 The roles of the skill carry over, with the field's own term beside each:
 
 - **Guard: the battery** attached to a research question: its tests, its decision rules and its
-  calibration on known truth, specified before the data. It lives as long as the question is
+  known-truth run, specified before the data. It lives as long as the question is
   relevant, and it is rerun on every dataset swapped in (a new cohort, a rerun, a simulation), which
   is what [science-data.md](science-data.md) makes checkable. A swapped-in dataset is a new
   confirmation, not an invitation to retune: a test changed after seeing a dataset is an entry in
   the evolution log ([science-analysis-plan.md](science-analysis-plan.md)), with the reason.
 - **Confirm: known-truth check of a pipeline step.** While the pipeline is being built, does step k
-  recover the effect planted in toy data? It lives until the battery is calibrated end to end
-  (see [science-protocol-and-sample.md](science-protocol-and-sample.md)), then is culled or kept
-  as a unit check of the code.
+  recover the effect planted in toy data? It lives until the battery's known-truth run passes end to end
+  (see [science-protocol-and-sample.md](science-protocol-and-sample.md)), then is culled. A check
+  worth keeping is rewritten as a software guard of the pipeline code, under the rules for guards.
 - **Probe: exploratory analysis or pilot.** It answers a question that feeds a decision (the
   variance, the feasibility, which measurement is more precise) and never confirms. Its output
   goes where decisions are recorded, and a hypothesis that came from a probe needs fresh data to
@@ -186,8 +190,12 @@ Do not prove a condition by running a significance test on the same data and bra
 result. Normality tests as gatekeepers are false safety: the condition concerns the sampling
 distribution of the statistic (usually argued from n, the spread of the data and the robustness of
 the test), small samples give these tests little power, large samples reject harmless
-departures, and choosing the test conditional on the outcome changes the error rates of the
-test chosen (Rochon, Gondan and Kieser 2012, BMC Medical Research Methodology). Use the evidence
+departures, and choosing the test conditional on the outcome distorts the conditional error rates of the
+test chosen (Rochon, Gondan and Kieser 2012, BMC Medical Research Methodology 12:81,
+doi:10.1186/1471-2288-12-81: simulated exponential, uniform and normal data, Shapiro-Wilk
+followed by the t test or Mann-Whitney; the conditional Type I error rates were seriously altered,
+while the overall rate of the two-stage procedure stayed near nominal, and the authors call the
+procedure formally incorrect). Use the evidence
 above, or a method robust to the departure from the outset, such as Welch's unequal-variance
 t-test in place of the pooled-variance one.
 

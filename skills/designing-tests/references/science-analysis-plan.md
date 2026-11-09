@@ -39,11 +39,11 @@ Treat each as a question the plan must be able to answer, not a box to fill.
   variance and its source, attrition, design effect, the sensitivity curve or the minimum
   detectable effect, the cost, and for each assumption its source and who agreed it. A guess that
   nobody agreed is marked as one.
-- **The known-truth validation.** Establishes that the battery, run as the pipeline will run it,
+- **The known-truth run.** Establishes that the battery, run as the pipeline will run it,
   holds its false-positive rate under H0, has the planned power, and recovers a planted effect.
   Includes how many runs and the Monte Carlo error, and the robustness runs behind the validity
   evidence.
-- **The data contract.** Establishes that the datasets are in a shape the battery can run on and
+- **The study contract.** Establishes that the datasets are in a shape the battery can run on and
   that a swapped-in dataset can be told to fit or not: the study contract, the data dictionary,
   the manifest's location. See [science-data.md](science-data.md).
 - **The planned figures.** Establishes what the results will look like before they exist: which
@@ -79,12 +79,16 @@ route to a convenient result in another, and only the record lets a reader tell.
 
 Each entry says:
 
-- **what changed** (the old and the new content, concretely);
-- **when and at what stage**: before any data were seen, after a pilot or a simulation, after
-  the data of this study were seen;
-- **why**, in terms of what was learned;
-- **who agreed** (the user, the parent agent, the dispatched agent that supplied the number);
-- **what it does to the claim**: which results remain confirmatory, and which become exploratory.
+- **date**;
+- **stage**: before any data were seen, after a pilot or a simulation, after the data of this
+  study were seen;
+- **change**: the old and the new content, concretely;
+- **reason**, in terms of what was learned;
+- **agreed_by**: the user, the parent agent, the dispatched agent that supplied the number;
+- **effect_on_claim**: which results remain confirmatory, and which become exploratory.
+
+These are the same six fields the manifest's evolution log requires
+([science-data.md](science-data.md)).
 
 The stage matters because a change made after seeing the data of the study can no longer be
 confirmatory for the result it concerns, however well justified: the result is reported as
