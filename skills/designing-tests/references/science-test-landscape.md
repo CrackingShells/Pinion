@@ -10,6 +10,16 @@
 - Regression and GLM (ordinal, count, zero-inflated)
 - Mixed models and GEE
 - Survival
+- Time series and autocorrelation
+- Circular data
+- Compositional data
+- High-dimensional data (LASSO, elastic net, inference after selection)
+- Equivalence and non-inferiority
+- Bayesian alternatives
+- Multiple testing
+- Meta-analysis
+- ML and benchmark comparisons
+- When nothing fits
 
 ## How to use this map
 
@@ -178,3 +188,166 @@ Which dependence in your design is neither nested, crossed nor serial? Search fo
 | Competing events handled | Name them in the plan and choose the estimand (cause-specific or cumulative incidence). |
 
 What event-time structure in your study is not here (recurrent events, interval censoring, a cured fraction)? Search for it and cite.
+
+## Time series and autocorrelation
+
+**Default: model the serial structure, then check that the residuals carry none.** For forecasting-style models, innovation residuals should be uncorrelated: read the autocorrelation plot and add a portmanteau test (Box-Pierce or Ljung-Box) as a summary, with lag 10 for non-seasonal data, 2m for seasonal data of period m, capped at T/5. Here the test is a diagnostic on a fitted model, not a gate before choosing it. Source: Hyndman and Athanasopoulos, Forecasting: Principles and Practice (3rd ed.), section on residual diagnostics, https://otexts.com/fpp3/diagnostics.html.
+
+**Alternatives and the property that favours each**
+
+- **Interrupted time series (segmented regression)** when an intervention starts at a known time and the claim is a change in level or slope. Propose the impact model (immediate, delayed, slope change) before looking at the data; there is no fixed minimum number of points, so argue from the expected effect and the noise. Autocorrelation is checked by residual plot, partial autocorrelation and the Breusch-Godfrey test, and handled by a Prais-type correction or ARIMA errors. A control series or a multiple-baseline design addresses time-varying confounders that a single series cannot. Source: Bernal, Cummins and Gasparrini 2017, Int J Epidemiol, doi:10.1093/ije/dyw098.
+- **Heteroskedasticity- and autocorrelation-consistent (HAC) covariance** when the mean model is right and only the standard errors are the problem. It corrects inference, not a misspecified mean. Source: Zeileis 2004, J Stat Softw 11(10).
+- **Ordinary regression on serial data** fails because the nominal sample size overstates the information: neighbouring points repeat each other. That is why the residual check matters.
+
+**Validity conditions and how to check**
+
+| Condition | Check |
+|---|---|
+| Stationarity or an explicit trend/seasonal model | Plot the series and the ACF; difference or model the trend by argument from the mechanism, not by a unit-root pretest alone. |
+| Uncorrelated innovations | ACF plot of residuals, then the portmanteau summary at the lags above. |
+| Impact model specified in advance (ITS) | The plan states it before data are seen. |
+| No concurrent event at the break | Argue from the design; add a control series where one exists. |
+
+Which temporal feature of your data is not here (irregular sampling, structural breaks, long memory)? Search for it and cite.
+
+## Circular data
+
+**Default: Rayleigh test for a unimodal departure from uniformity with an unknown mean direction.** Use the V-test only when the direction is specified before the data. In simulations of circular tests, Rao's spacing test performed worst for unimodal alternatives; for multimodal departures the Hermans-Rasson test performed well, but with symmetric multiple modes all tests perform poorly, and doubling the angles helps only for perfect f-fold symmetry. Source: Landler, Ruxton and Malkemper 2018, Behav Ecol Sociobiol, doi:10.1007/s00265-018-2538-y.
+
+**Why a linear test fails here**: angles have no origin (359 degrees is near 1 degree), so a linear mean or SD of angles describes nothing. Use circular summaries (mean resultant length, circular mean).
+
+| Condition | Check |
+|---|---|
+| Alternative is unimodal (Rayleigh) | Plot the data on the circle; if it looks bimodal, use a test aimed at multimodal departures. |
+| Direction prespecified (V-test) | The plan fixes it before data. |
+| Independent angles | Argue from the design: repeated trials of one animal are not independent. |
+
+Is your circular question a comparison of groups or a regression on angles? That needs its own source: search and cite.
+
+## Compositional data
+
+**Default: analyse log-ratios, not raw proportions.** Parts of a whole sum to a constant, so raw components show a negative correlation bias and spurious correlation, and the apparent correlation changes when you subset the parts. Differential-abundance questions must account for compositionality; the centred log-ratio (clr) transformation is one standard tool. Source: Gloor et al. 2017, Front Microbiol, doi:10.3389/fmicb.2017.02224.
+
+**Alternatives and the property that favours each**
+
+- **Pairwise or additive log-ratios** when a stable reference part exists and the claim is about the ratio to it.
+- **Power transformations** when many exact zeros make log-ratios awkward; the work on Aitchison's approach argues that subcompositional coherence (quasi-coherence) is what matters, that power transformations allow zeros, and that isometric log-ratios are not a prerequisite. Source: Greenacre et al., arXiv:2201.05197 (abstract-level claim).
+
+| Condition | Check |
+|---|---|
+| Zeros handled by a stated, justified rule | Count zeros per part; report how they were treated and run the analysis under a second treatment as sensitivity. |
+| Question stated for ratios, not absolute amounts | Argue from the design: relative data cannot support a claim about absolute change without an external anchor. |
+
+What composition in your study is not a simple sum-to-one (spatial, multi-level)? Search and cite.
+
+## High-dimensional data (LASSO, elastic net, inference after selection)
+
+**Default for prediction with many predictors: penalised regression with the penalty chosen by cross-validation, with performance estimated on data that played no part in the selection.** The elastic net is the usual choice over LASSO when predictors are correlated: the LASSO selects at most n variables when p exceeds n and tends to keep one of a group of highly correlated predictors, while the elastic net has a grouping effect (Zou and Hastie 2005, J R Stat Soc B, https://hastie.su.domains/Papers/elasticnet.pdf).
+
+**The warning that decides everything: inference after selection.** A p-value or interval computed as if the selected model had been chosen in advance has none of the classical guarantees, because the data chose the hypothesis. Valid routes:
+
+- **Sample splitting**: select on one part, test on the other. Valid conditional on the model selected on the first half, at the cost of power; one split is a "p-value lottery", so aggregate across splits (Meinshausen, Meier and Buhlmann 2009, arXiv:0811.2177); or screen, cross-validate, then test on held-out data (Wasserman and Roeder 2009, arXiv:0704.1139).
+- **Selective inference**: exact inference for the LASSO conditioned on the selection event (Lee, Sun, Sun and Taylor 2016, arXiv:1311.6238).
+- **Simultaneous inference over all submodels** (PoSI): valid, and conservative (Berk et al., arXiv:1306.1059, abstract-level claim). A review of the options: Dezeure et al., arXiv:1408.4026 (abstract-level claim).
+
+**Selection also biases performance estimates.** Tuning and choosing the model on the same folds you report over-fits the selection criterion; use nested cross-validation or a held-out set (Cawley and Talbot 2010, JMLR 11, abstract-level claim).
+
+| Condition | Check |
+|---|---|
+| The inference claim and the selection are separated | The plan names which data select and which data test, or which selective method is used. |
+| Penalty tuned without leaking test information | Nested resampling or a held-out set; read the code path. |
+| Sparsity plausible (LASSO), or grouped signal (elastic net) | Argue from the mechanism; compare selection stability across resamples. |
+
+Does your goal differ (causal effect with many confounders, structured sparsity)? Search and cite.
+
+## Equivalence and non-inferiority
+
+**Default: two one-sided tests (TOST) against margins set from the smallest effect size of interest (SESOI).** Equivalence is concluded if the 90% confidence interval for the difference lies inside the bounds, which is the same decision as two one-sided tests at the 5% level. A non-significant difference test is not evidence of equivalence. Source: Lakens 2017, Soc Psychol Personal Sci, doi:10.1177/1948550617697177 (PMC5502906).
+
+- **Welch version of TOST** when variances differ (the Welch argument above applies). **Non-inferiority** is a single one-sided test against one margin, used when only one direction matters.
+- **Power**: plan the sample size for the equivalence test, with the true effect possibly not zero; the cited paper gives power tables and the iteration needed.
+- **The margin is the scientific decision.** It comes from the smallest effect that would matter, argued from the field, not from the sample's own spread. A margin chosen after seeing the data defeats the test.
+
+| Condition | Check |
+|---|---|
+| Margins justified and set before analysis | The plan cites the reasoning for the SESOI. |
+| Interval method valid for the data | Same conditions as the underlying difference test; apply that family's checks. |
+| Equivalence on the right scale | State the margin on the scale of the claim (raw units, ratio). |
+
+Which margin question here has no accepted SESOI? Say so in the plan and cite the nearest argument.
+
+## Bayesian alternatives
+
+**Default: posterior estimates with credible intervals, reported with the prior and a sensitivity analysis.** Bayes factors compare models and are sensitive to the prior in ways the posterior of a parameter is not: they depend heavily on prior assumptions, and are even more sensitive to them than within-model posteriors. Source: Schad et al. 2022, Workflow techniques for the robust use of Bayes factors, arXiv:2103.08744.
+
+**Validity rests on**
+
+- **Prior sensitivity**: refit under alternative reasonable priors, or use a static sensitivity analysis (perturbation of the prior without refit). If the conclusion flips, report the dependence, not one number. Source: Gelman et al. 2020, Bayesian workflow, arXiv:2011.01808.
+- **Prior predictive checks**: simulate data from the prior to see that it does not rule out or overwhelm plausible data (same source; Schad et al.).
+- **Model adequacy**: posterior predictive checks compare simulated replications with the data; a Bayes factor between two inadequate models still ranks them (same sources).
+- **Computation**: chains must have converged. The rank-normalised R-hat with a threshold of 1.01 was proposed because the older 1.1 threshold can be met well before convergence. Source: Vehtari et al., arXiv:1903.08008.
+- **Calibration of the procedure**: simulation-based calibration checks that the sampler and the model recover the prior (Schad et al.).
+
+A Bayesian analysis is not freed from error control: say what decision it supports and what rule you would use before the data arrive. Which part of your Bayesian model has no standard check? Search and cite.
+
+## Multiple testing
+
+**Default (confirmatory family of tests): Holm.** It is valid under arbitrary dependence and dominates Bonferroni. Hochberg and Hommel need independence or non-negative association among the tests. Source: R `p.adjust` documentation.
+
+**Alternatives and the property that favours each**
+
+- **Benjamini-Hochberg (BH)** when the goal is to control the false discovery rate among many exploratory findings rather than any false claim. BH controls the FDR under positive regression dependency on the true nulls (PRDS); for other dependence use the conservative Benjamini-Yekutieli procedure or a modification. Source: Benjamini and Yekutieli 2001, Ann Stat 29:1165. Choose the error rate the claim needs: familywise for each claim standing alone, FDR for a list of leads (Goeman and Solari 2014, Stat Med, doi:10.1002/sim.6082, abstract-level claim).
+- **Hierarchical, fixed-sequence or gatekeeping procedures** when endpoints are ordered by importance or structured (a primary before secondaries); graphical approaches allocate and pass on the error budget (Bretz et al. 2009, Stat Med, doi:10.1002/sim.3495, abstract-level claim).
+
+| Condition | Check |
+|---|---|
+| Family defined before looking at results | The plan lists the tests in the family and the error rate. |
+| Dependence structure fits the procedure | Argue from the design: are tests positively related (same units, same direction) or arbitrary? If unsure, choose the procedure valid under arbitrary dependence. |
+| Order or hierarchy set a priori (gatekeeping) | State the order in the plan. |
+
+A set of tests that does not form one family (several studies, several aims)? Say how you drew the line and cite.
+
+## Meta-analysis
+
+**Default: a random-effects model with the Hartung-Knapp-Sidik-Jonkman (HKSJ) interval, plus a prediction interval.** A fixed-effect analysis is valid if all estimates estimate one common effect; otherwise its estimate may describe no real population and its interval is too narrow. A random-effects analysis assumes study effects are different but related, following a normal distribution, and must be read carefully. In simulations, the DerSimonian-Laird (DL) interval had Type I error rates that could exceed 30% when the nominal level was 5%, while HKSJ at most doubled them; extra caution is needed with 5 or fewer studies of very unequal sizes. Sources: IntHout et al. 2014, BMC Med Res Methodol 14:25, doi:10.1186/1471-2288-14-25; Deeks et al., Cochrane Handbook for Systematic Reviews of Interventions, chapter 10.
+
+**Heterogeneity.** Report tau-squared and a prediction interval (the range of true effects in a new setting). I-squared is ambiguous: a high value need not mean widely dispersed effects, because it depends on the studies' sizes. Estimates of I-squared and tau-squared are very uncertain with few studies. Source: IntHout et al. 2016, BMJ Open, doi:10.1136/bmjopen-2015-010247.
+
+| Condition | Check |
+|---|---|
+| Studies comparable enough to pool | Argue from the question and the study designs; explain sources of heterogeneity in advance (subgroups, meta-regression), not after the forest plot. |
+| Independent effect estimates | One estimate per participant group; handle multiple arms or outcomes by a stated rule. |
+| Small-study effects and publication bias | Search the Cochrane chapter's guidance for your outcome type and cite what you apply; do not rely on one plot. |
+
+Does your synthesis have dependent effects (many outcomes per study) or a network of treatments? Search and cite.
+
+## ML and benchmark comparisons
+
+**Default for comparing two models on one dataset: pair by seed, fold or example, and use a variance estimate that accounts for overlapping training sets.** The usual paired t-test on cross-validation results is miscalibrated because folds overlap; Nadeau and Bengio showed no unbiased variance estimator exists, and propose the corrected resampled t-test, whose variance is sigma-squared times (1/n + n_te/n_tr). Benavoli et al. recommend Bayesian correlated alternatives, and hierarchical ones across datasets. Source: Benavoli et al. 2017, JMLR 18, http://jmlr.org/papers/v18/16-305.html. In Dietterich's comparison, the difference-of-proportions test and the resampled paired t had high Type I error and 10-fold CV t was somewhat elevated; McNemar's test had low Type I error and suits algorithms run once, and 5x2cv is advised when ten runs are affordable (Dietterich 1998, Neural Comput, doi:10.1162/089976698300017197, abstract-level claim).
+
+**Alternatives and the property that favours each**
+
+- **McNemar's test** when each model runs once on a test set: it uses only the discordant pairs (one right, other wrong). Use the exact binomial version when the discordant counts are small; the chi-squared and binomial p-values agree when both counts exceed about 50. Source: Raschka 2018, arXiv:1811.12808.
+- **Several datasets**: treat datasets as the independent units. Wilcoxon signed-rank for two classifiers, Friedman with post-hoc tests for more (Iman-Davenport correction makes it less conservative); resampling error within a dataset is not the issue there. The signed-rank test needs commensurable score differences across datasets. Source: Demsar 2006, JMLR 7:1-30.
+- **Reinforcement-learning and few-run settings**: report interval estimates and the interquartile mean rather than a point estimate (Agarwal et al. 2021, arXiv:2108.13264, abstract-level claim); the number of seeds determines power, and Welch's t-test applies when variances differ (Colas et al. 2018, arXiv:1806.08295).
+
+| Condition | Check |
+|---|---|
+| Same splits, seeds or examples for both models | Read the experiment code; pairing is a design property. |
+| Test data not used for tuning | Argue from the pipeline; separate tuning from testing. |
+| Datasets chosen independently of the result | State the selection rule. |
+| Run-to-run variance included | Repeat training with different seeds; report the spread. |
+
+What comparison here has no test above (generative models, human evaluation, non-iid test streams)? Search and cite.
+
+## When nothing fits
+
+If no family matches, do not stretch the nearest one.
+
+1. **Describe the situation by its axes** (question, outcome, dependence, groups, covariates, n and events, claim), in the plan's words, with the feature that made the families above fail.
+2. **Search** with those axes as the query: textbooks, method papers, software documentation, a simulation study of the candidate method.
+3. **Cite** what you opened. Prefer the paper that states the validity conditions over the one that introduces the name.
+4. **Record the validity evidence in the plan**: the conditions, and for each the argument, diagnostic, simulation or cited result that shows it holds here. Where it cannot be shown, run a known-truth run on simulated data shaped like yours and report how the method behaved.
+5. **Ask what would make the method wrong**, then look for that in the data you have before the confirmatory run.
+
+A new situation usually combines axes seen above (clustered, zero-heavy, time-ordered). Start from the nearest family's validity table and ask which row no longer holds.
