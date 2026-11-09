@@ -25,7 +25,7 @@ candidates worth a guard:
    its maintainers' to guard.
 2. **Design cornerstones.** The decisions everything else rests on: the data model's shape, the
    ordering or atomicity promise, the contract between layers. When a cornerstone breaks, many
-   features break quietly. These are the guards the user's warning is about, and they are few and
+   features break quietly. These are the guards that matter most, and they are few and
    high-value. Find them by asking "if this stopped holding, how many other things would be wrong
    without any of their own tests noticing?"
 3. **Seams with code we do not own.** The places where our code assumes something about a database,
