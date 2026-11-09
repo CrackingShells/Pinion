@@ -19,7 +19,7 @@ script's own helpers. Every problem below is a problem, never a warning, so that
 
 | Behavior | Bug it catches |
 |---|---|
-| `check` accepts a dataset that conforms to its dictionary (declared missing codes, values on both range bounds, `10.0` for an allowed 10, a BOM at the start of the file), with the dictionary by path or inline, a filled evolution log, and prints `RESULT=OK`, exit 0 | a validator that rejects declared missing codes; an exclusive range bound; numeric allowed values compared as text; a BOM read as part of the first header; a dictionary-by-path that is never loaded; a constant `RESULT=OK` |
+| `check` accepts a dataset that conforms to its dictionary (declared missing codes, values on both range bounds, a range whose bounds coincide, `10.0` for an allowed 10, a BOM at the start of the file), with the dictionary by path or inline, a filled evolution log, and prints `RESULT=OK`, exit 0 | a validator that rejects declared missing codes; an exclusive range bound; numeric allowed values compared as text; a BOM read as part of the first header; a dictionary-by-path that is never loaded; a constant `RESULT=OK` |
 | `check` reports a missing column, an extra column, a repeated header, a ragged row, a variable declared twice | column comparison done one-way or by position; csv rows indexed past their end |
 | `check` reports values that break a type, leave the allowed set or the range, or are not finite (`inf`, `1e999`) | `int` parsing via `float`; an exclusive bound; a set test dropped; infinity accepted as a number |
 | `check` reports a missing-looking cell (empty, whitespace, NA) that the variable does not declare, and accepts it where declared | missing tokens accepted everywhere; whitespace-only cells treated as data |
@@ -35,6 +35,7 @@ script's own helpers. Every problem below is a problem, never a warning, so that
 | `compare` says DIFFERS with the exact difference: variable added or removed, changed type, units, range, allowed values, missing codes, role, unit of the dataset, protocol or contract version, dataset added or removed | one field left out of the comparison; the result computed from the first variable only |
 | `init` writes a manifest whose dictionary lists the header columns in order, takes the format from the extension, and refuses to overwrite a file | header read from the wrong line or delimiter; a filled-in manifest destroyed by a rerun |
 | `init`'s manifest is flagged by `check` until filled, and passes once filled | a scaffold `check` cannot tell from a finished one, or one no valid manifest can be made from |
+| `init` drops a byte-order mark from the first variable name | a BOM read as part of the name |
 | a bad argument (unknown flag or subcommand, missing or unreadable input, unsupported extension, empty data file) exits 64 with a message | argparse's exit 2; an unreadable file crashing |
 
 # Open questions (probes)
@@ -161,6 +162,15 @@ def test_check_matches_numeric_allowed_values_by_number_not_by_spelling(tmp_path
 
 def test_check_reads_a_file_that_starts_with_a_byte_order_mark(tmp_path):
     proc = run("check", lay_out(tmp_path, csv="\ufeff" + BASE_CSV), cwd=tmp_path)
+    assert first_line(proc) == "RESULT=OK", proc.stdout + proc.stderr
+
+
+def test_check_accepts_a_range_whose_bounds_coincide(tmp_path):
+    def only_zero(dictionary):
+        variable(dictionary, "dose_mg")["range"] = [0, 0]
+
+    all_zero = swap(BASE_CSV, "29,10,350.2", "29,0,350.2")
+    proc = run("check", lay_out(tmp_path, csv=all_zero, edit_dictionary=only_zero), cwd=tmp_path)
     assert first_line(proc) == "RESULT=OK", proc.stdout + proc.stderr
 
 
@@ -572,6 +582,13 @@ def test_init_takes_format_and_delimiter_from_the_extension(
     dataset = json.loads((tmp_path / "study.json").read_text())["datasets"][0]
     assert dataset["format"] == expected_format
     assert [v["name"] for v in dataset["dictionary"]["variables"]] == expected_names
+
+
+def test_init_does_not_put_a_byte_order_mark_in_the_first_variable_name(tmp_path):
+    (tmp_path / "trial.csv").write_text("\ufeff" + BASE_CSV, encoding="utf-8")
+    run("init", "trial.csv", "--out", "study.json", cwd=tmp_path)
+    dataset = json.loads((tmp_path / "study.json").read_text())["datasets"][0]
+    assert dataset["dictionary"]["variables"][0]["name"] == "subject_id"
 
 
 def test_init_refuses_to_overwrite_an_existing_manifest(tmp_path):
