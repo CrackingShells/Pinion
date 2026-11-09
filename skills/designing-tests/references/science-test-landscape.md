@@ -31,7 +31,7 @@ Go beyond the map when your situation calls for it:
 2. Confirm it by search (web or paper search): find a primary source that states the method's validity conditions and that fits your situation's axes (next section).
 3. Cite what you read in the plan, next to the validity evidence. A method taken from memory without that check is not acceptable, because the failure is silent: the test runs and returns a p-value either way.
 
-Every entry follows one shape: when it fits, what separates it from its neighbours, validity conditions each with how to check it, and a source. Prove validity by an argument from the design, a diagnostic, a robustness simulation, or a cited result. Do not prove it with a significance test run on the same data you are about to analyse: the pretest has its own error rates, and the main test's error rates become conditional on it passing (see the normality pretest entry below). A diagnostic you read as a plot or an estimate (expected counts, a residual plot, an intraclass correlation) is not a gatekeeping test.
+Every entry follows one shape: when it fits, what separates it from its neighbours, validity conditions each with how to check it, and a source. Prove validity by an argument from the design, a diagnostic, a robustness simulation, or a cited result. Do not prove it with a significance test run on the same data you are about to analyse: the pretest has its own error rates, and the main test's error rates become conditional on it passing (see the normality row in the validity table under Location and scale). A diagnostic you read as a plot or an estimate (expected counts, a residual plot, an intraclass correlation) is not a gatekeeping test.
 
 Where an entry says a condition "holds by design", the argument itself goes in the plan: how units were sampled, randomised, or measured. For which test settles which statistical question, see `science-questions-and-tests.md`; for how a passed test can still be unsafe, see `science-false-safety.md`; for the sample and its size, see `science-protocol-and-sample.md`.
 
@@ -46,8 +46,9 @@ Read these axes off the research question before you open a family. Two situatio
 - **Covariates**: adjustment needed for confounding or for precision, and whether the effect may differ by covariate.
 - **n and events**: total units, units per group, number of clusters, number of events (binary outcome, survival). Several rules below depend on the scarcer of these, not on the total.
 - **The claim**: a difference, an equivalence within a margin, an association, a prediction on new data. The same data support different tests for different claims.
+- **Missing data mechanism**: complete-case analysis and GEE (with an independence or simple working correlation) are valid when data are missing completely at random (MCAR); likelihood-based mixed models are valid when data are missing at random given the modelled covariates and outcomes (MAR). Argue the mechanism from the design (why a value is absent) and run a sensitivity analysis under a departure from it. The data alone cannot distinguish MAR from missing not at random.
 
-State the axes in the plan in one line each. A reader (or reviewer) who sees them can check that the family chosen matches.
+State the axes in the plan in one line each. A reader who sees them can check that the family chosen matches.
 
 ## Location and scale
 
@@ -57,7 +58,7 @@ Source: Delacre, Lakens and Leys 2017, Int Rev Soc Psychol, doi:10.5334/irsp.82;
 **Alternatives and the property that favours each**
 
 - **Mann-Whitney / Wilcoxon rank-sum** when the question is about stochastic ordering, P(X<Y) against P(Y<X), or the outcome is ordinal or heavily outlier-prone. It does not test medians, and it is not a safe replacement for Welch under unequal variances: it needs exchangeability under the null and for a medians reading it needs equal spread; its Type I error can be inflated even at large n when that fails. If you want the stochastic-ordering claim without the equal-spread requirement, use Brunner-Munzel (a permutation version is weakly favoured); its power is about that of Mann-Whitney, apart from skewed data with unequal n, where Mann-Whitney has a small advantage. Source: Karch 2021, Adv Methods Pract Psychol Sci, doi:10.1177/2515245921999602.
-- **Wilcoxon signed-rank** for paired differences when the t-test's assumptions are doubtful. It assumes the differences are commensurable (a difference of 5 means the same anywhere on the scale) and continuous (not rounded to ties). When the paired t-test's assumptions do hold, signed-rank is less powerful. Source: Demsar 2006, JMLR 7:1-30.
+- **Wilcoxon signed-rank** for paired differences when the t-test's assumptions are doubtful. It assumes the differences are commensurable (a difference of 5 means the same anywhere on the scale) and continuous (not rounded to ties), and under the null they are symmetric about zero. When the paired t-test's assumptions do hold, signed-rank is less powerful. Source: Demšar 2006, JMLR 7:1-30.
 - **Permutation test** when the design supplies exchangeability (random assignment) and the statistic you care about has no convenient null distribution. Count the observed arrangement among the permutations: a permutation p-value of exactly zero is never correct (use (b+1)/(m+1) or the exact count). Source: Phipson and Smyth 2010, Stat Appl Genet Mol Biol, arXiv:1603.05766.
 - **Yuen's trimmed-mean test**: not a good default in the same simulation (Delacre 2017); choose it only when the claim is about trimmed means.
 
@@ -66,9 +67,9 @@ Source: Delacre, Lakens and Leys 2017, Int Rev Soc Psychol, doi:10.5334/irsp.82;
 | Condition | Check without a gatekeeping test |
 |---|---|
 | Independence of units (all families) | Argue from the design: how units were drawn or assigned. Repeated or clustered units go to the mixed-model family. |
-| Approximate normality of the mean's sampling distribution (Welch) | Look at the sample (histogram, QQ-plot) for heavy tails or strong skew; with small n and strong skew, run a robustness simulation from a plausible skewed distribution at your n and group ratio. Do not run a Shapiro-Wilk test and then choose the test by its p-value: in a simulation, a pretest at alpha .10 on exponential data at n=30 moved the t test's conditional Type I error to 17.0% against 4.7%. Source: Rochon, Gondan and Kieser 2012, BMC Med Res Methodol 12:81, doi:10.1186/1471-2288-12-81 (the authors do not endorse the two-stage approach). |
+| Approximate normality of the mean's sampling distribution (Welch) | Look at the sample (histogram, QQ-plot) for heavy tails or strong skew; with small n and strong skew, run a robustness simulation from a plausible skewed distribution at your n and group ratio. Do not run a Shapiro-Wilk test and then choose the test by its p-value: in one simulation (pooled t test after a Shapiro-Wilk pretest at alpha .10, exponential data, n=30 per group) the t test's conditional Type I error was 17.0% against 4.7% without the pretest. The overall Type I error of the whole two-stage procedure stayed near nominal, so the damage is to the conditional error of the test you report, and the authors still do not endorse the two-stage approach. Source: Rochon, Gondan and Kieser 2012, BMC Med Res Methodol 12:81, doi:10.1186/1471-2288-12-81. |
 | Equal variances (Student, classical F only) | Not needed for Welch. If you must use the pooled test, equal group sizes make it tolerant; otherwise switch. Levene and Brown-Forsythe are less sensitive to non-normality than Bartlett, but remain pretests (NIST/SEMATECH e-Handbook of Statistical Methods, section 1.3.5.10, Levene test). |
-| Commensurable, untied differences (signed-rank) | Argue from the measurement scale; count ties. |
+| Commensurable, untied, symmetric differences (signed-rank) | Argue from the measurement scale; count ties; plot the differences (histogram or QQ-plot) to read their symmetry. |
 | Exchangeability under the null (rank-sum, permutation) | Argue from the randomisation. Without random assignment, say what exchangeability would mean and why it is plausible. |
 
 A different outcome shape (ordinal with few levels, counts, proportions) belongs to the families below. What is the case here that the table does not name?
@@ -93,6 +94,8 @@ A different outcome shape (ordinal with few levels, counts, proportions) belongs
 | Adequate expected counts | Read the expected-count table (for example `expected_freq` returned by scipy's `chi2_contingency`, scipy documentation). Where the minimum falls below the source's threshold, switch method; do not drop cells. |
 | Margins fixed or free (decides conditional vs unconditional test) | Read it off the design: what was fixed in advance. |
 
+Which table in your study is none of these (sparse many-category tables, matched sets, tables with structural zeros)? Describe it by its axes, search, and cite.
+
 ## Association and agreement
 
 Agreement and association are different questions. A correlation of 0.95 can sit beside a systematic offset of one unit: correlation measures the linear relation, not agreement. Settle which claim you make first.
@@ -111,6 +114,8 @@ Agreement and association are different questions. A correlation of 0.95 can sit
 | Condition | Check |
 |---|---|
 | Bland-Altman: differences roughly constant in size across the measurement range | Plot differences against the mean of the two methods; a trend or a fan means the limits are not one number (log-transform or model the trend). |
+| Bland-Altman: differences approximately normal (the 95% interval reading rests on it) | QQ-plot or histogram of the differences, read as a diagnostic, not as a gate. |
+| Bland-Altman: limits estimated with their uncertainty | Report a confidence interval for each limit of agreement, and compare the outer ends, not the point estimates, with the acceptable limit. |
 | Bland-Altman: acceptable limits set a priori | Show the preregistered limit in the plan. |
 | ICC form matches the design (raters fixed or sampled, single or mean of ratings) | Argue from the design and name the form. |
 | Kappa: prevalence and rater marginals not extreme | Read the 2x2 or k x k table. |
@@ -145,7 +150,7 @@ Does your outcome follow none of these (a bounded proportion, a semicontinuous c
 
 ## Mixed models and GEE
 
-**Default when units share a source (subjects, litters, sites, batches, seeds): a mixed model whose random effects mirror the design, fitted by REML, with small-sample degrees of freedom (Kenward-Roger or Satterthwaite).** Pseudoreplication, treating non-independent observations as independent, is a design error, not a modelling refinement: reporting n, the degrees of freedom and the test statistic makes it detectable, and mixed models are the preferred remedy (Lazic 2010, BMC Neurosci, doi:10.1186/1471-2202-11-5). A likelihood-ratio test or a t-as-z test is anti-conservative for small samples; REML with Kenward-Roger or Satterthwaite gave acceptable Type I error in the simulations reported (Luke 2017, Behav Res Methods, doi:10.3758/s13428-016-0809-y, abstract-level claim).
+**Default when units share a source (subjects, litters, sites, batches, seeds): a mixed model whose random effects mirror the design, fitted by REML for a linear mixed model, with small-sample degrees of freedom (Kenward-Roger or Satterthwaite).** Pseudoreplication, treating non-independent observations as independent, is a design error, not a modelling refinement: reporting n, the degrees of freedom and the test statistic makes it detectable, and mixed models are the preferred remedy (Lazic 2010, BMC Neurosci, doi:10.1186/1471-2202-11-5). A likelihood-ratio test or a t-as-z test is anti-conservative for small samples; REML with Kenward-Roger or Satterthwaite gave acceptable Type I error in the simulations reported (Luke 2017, Behav Res Methods, doi:10.3758/s13428-016-0809-y, abstract-level claim). Those corrections are for linear mixed models. A likelihood-ratio comparison of models that differ in fixed effects needs ML fits, because REML likelihoods of models with different fixed effects are not comparable. For a generalised linear mixed model (GLMM) the Kenward-Roger adjustment is an ad hoc procedure outside its derivation (informally found accurate), `glmer`-type fits are not REML, and the options are a likelihood-ratio test, a parametric bootstrap (simulate from the reduced model, refit both, and compare the deviance differences) or a profile or bootstrap interval. Source: Bolker et al., GLMM FAQ, https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html.
 
 **Alternatives and the property that favours each**
 
@@ -161,7 +166,7 @@ Does your outcome follow none of these (a bounded proportion, a semicontinuous c
 | Random effects represent every source of non-independence in the design | Argue from the design: list the sampling levels; every level with replicates enters. |
 | Enough clusters for the variance components and the inference | Count them. Few levels of a random factor gives an unstable variance estimate; treat it as fixed or use a correction. |
 | Residual and random-effect distributions reasonable | QQ-plots of residuals and of conditional modes; simulated-residual diagnostics (see DHARMa above). |
-| Small-sample inference corrected | State the df method in the plan. |
+| Small-sample inference corrected | State the df method in the plan; for a GLMM name the method (parametric bootstrap, likelihood ratio) and why it holds at your number of clusters. |
 | Convergence and singular fit | Read the fit messages; a singular fit means the structure is more complex than the data support, so simplify by the design's logic, not by chasing p-values. |
 | GEE: working correlation matters little, robust variance reliable | Many clusters; compare robust and model-based standard errors as a diagnostic. |
 
@@ -214,7 +219,7 @@ Which temporal feature of your data is not here (irregular sampling, structural 
 
 **Default: Rayleigh test for a unimodal departure from uniformity with an unknown mean direction.** Use the V-test only when the direction is specified before the data. In simulations of circular tests, Rao's spacing test performed worst for unimodal alternatives; for multimodal departures the Hermans-Rasson test performed well, but with symmetric multiple modes all tests perform poorly, and doubling the angles helps only for perfect f-fold symmetry. Source: Landler, Ruxton and Malkemper 2018, Behav Ecol Sociobiol, doi:10.1007/s00265-018-2538-y.
 
-**Why a linear test fails here**: angles have no origin (359 degrees is near 1 degree), so a linear mean or SD of angles describes nothing. Use circular summaries (mean resultant length, circular mean).
+**Why a linear test fails here**: angles have no origin (359 degrees is near 1 degree), so a linear mean or standard deviation (SD) of angles describes nothing. Use circular summaries (mean resultant length, circular mean).
 
 | Condition | Check |
 |---|---|
@@ -285,7 +290,7 @@ Which margin question here has no accepted SESOI? Say so in the plan and cite th
 - **Prior sensitivity**: refit under alternative reasonable priors, or use a static sensitivity analysis (perturbation of the prior without refit). If the conclusion flips, report the dependence, not one number. Source: Gelman et al. 2020, Bayesian workflow, arXiv:2011.01808.
 - **Prior predictive checks**: simulate data from the prior to see that it does not rule out or overwhelm plausible data (same source; Schad et al.).
 - **Model adequacy**: posterior predictive checks compare simulated replications with the data; a Bayes factor between two inadequate models still ranks them (same sources).
-- **Computation**: chains must have converged. The rank-normalised R-hat with a threshold of 1.01 was proposed because the older 1.1 threshold can be met well before convergence. Source: Vehtari et al., arXiv:1903.08008.
+- **Computation**: run at least four chains, require the rank-normalised R-hat below 1.01 (the older 1.1 threshold can be met well before convergence), and require bulk and tail effective sample sizes above 400 (bulk-ESS resolves the centre of the distribution, tail-ESS the interval endpoints). Source: Vehtari et al., arXiv:1903.08008.
 - **Calibration of the procedure**: simulation-based calibration checks that the sampler and the model recover the prior (Schad et al.).
 
 A Bayesian analysis is not freed from error control: say what decision it supports and what rule you would use before the data arrive. Which part of your Bayesian model has no standard check? Search and cite.
@@ -309,7 +314,7 @@ A set of tests that does not form one family (several studies, several aims)? Sa
 
 ## Meta-analysis
 
-**Default: a random-effects model with the Hartung-Knapp-Sidik-Jonkman (HKSJ) interval, plus a prediction interval.** A fixed-effect analysis is valid if all estimates estimate one common effect; otherwise its estimate may describe no real population and its interval is too narrow. A random-effects analysis assumes study effects are different but related, following a normal distribution, and must be read carefully. In simulations, the DerSimonian-Laird (DL) interval had Type I error rates that could exceed 30% when the nominal level was 5%, while HKSJ at most doubled them; extra caution is needed with 5 or fewer studies of very unequal sizes. Sources: IntHout et al. 2014, BMC Med Res Methodol 14:25, doi:10.1186/1471-2288-14-25; Deeks et al., Cochrane Handbook for Systematic Reviews of Interventions, chapter 10.
+**Default: a random-effects model with the Hartung-Knapp-Sidik-Jonkman (HKSJ) interval, a stated tau-squared estimator (REML or Paule-Mandel), and a prediction interval.** A fixed-effect analysis is valid if all estimates estimate one common effect; otherwise its estimate may describe no real population and its interval is too narrow. A random-effects analysis assumes study effects are different but related, following a normal distribution, and must be read carefully. In simulations, the DerSimonian-Laird (DL) interval had Type I error rates that could exceed 30% when the nominal level was 5%, while HKSJ at most doubled them; extra caution is needed with 5 or fewer studies of very unequal sizes. The Cochrane chapter notes that several simulation studies recommend the Paule-Mandel estimator, that a later comprehensive simulation recommended REML with no single approach universally preferable, and that I-squared and tau-squared are very uncertain with few studies. Name the estimator in the plan. Sources: IntHout et al. 2014, BMC Med Res Methodol 14:25, doi:10.1186/1471-2288-14-25; Deeks et al., Cochrane Handbook for Systematic Reviews of Interventions, chapter 10.
 
 **Heterogeneity.** Report tau-squared and a prediction interval (the range of true effects in a new setting). I-squared is ambiguous: a high value need not mean widely dispersed effects, because it depends on the studies' sizes. Estimates of I-squared and tau-squared are very uncertain with few studies. Source: IntHout et al. 2016, BMJ Open, doi:10.1136/bmjopen-2015-010247.
 
@@ -323,12 +328,13 @@ Does your synthesis have dependent effects (many outcomes per study) or a networ
 
 ## ML and benchmark comparisons
 
-**Default for comparing two models on one dataset: pair by seed, fold or example, and use a variance estimate that accounts for overlapping training sets.** The usual paired t-test on cross-validation results is miscalibrated because folds overlap; Nadeau and Bengio showed no unbiased variance estimator exists, and propose the corrected resampled t-test, whose variance is sigma-squared times (1/n + n_te/n_tr). Benavoli et al. recommend Bayesian correlated alternatives, and hierarchical ones across datasets. Source: Benavoli et al. 2017, JMLR 18, http://jmlr.org/papers/v18/16-305.html. In Dietterich's comparison, the difference-of-proportions test and the resampled paired t had high Type I error and 10-fold CV t was somewhat elevated; McNemar's test had low Type I error and suits algorithms run once, and 5x2cv is advised when ten runs are affordable (Dietterich 1998, Neural Comput, doi:10.1162/089976698300017197, abstract-level claim).
+**Default for comparing two models on one dataset: pair by seed, fold or example, and use a variance estimate that accounts for overlapping training sets.** The usual paired t-test on cross-validation results is miscalibrated because folds overlap; the correlation between the results of different folds cannot be estimated without bias (Nadeau and Bengio), so their corrected resampled t-test uses a heuristic: with J resamples (n in Benavoli's notation), the variance of the mean difference is estimated as sigma-squared times (1/J + n_te/n_tr), n_te and n_tr being the test and training sizes. Applied to k-fold cross-validation the correction remains a heuristic, so treat its p-value as approximate. Benavoli et al. recommend Bayesian correlated alternatives, and hierarchical ones across datasets. Source: Benavoli et al. 2017, JMLR 18, http://jmlr.org/papers/v18/16-305.html. In Dietterich's comparison, the difference-of-proportions test and the resampled paired t had high Type I error and 10-fold CV t was somewhat elevated; McNemar's test had low Type I error and suits algorithms run once, and 5x2cv is advised when ten runs are affordable (Dietterich 1998, Neural Comput, doi:10.1162/089976698300017197, abstract-level claim).
 
 **Alternatives and the property that favours each**
 
-- **McNemar's test** when each model runs once on a test set: it uses only the discordant pairs (one right, other wrong). Use the exact binomial version when the discordant counts are small; the chi-squared and binomial p-values agree when both counts exceed about 50. Source: Raschka 2018, arXiv:1811.12808.
-- **Several datasets**: treat datasets as the independent units. Wilcoxon signed-rank for two classifiers, Friedman with post-hoc tests for more (Iman-Davenport correction makes it less conservative); resampling error within a dataset is not the issue there. The signed-rank test needs commensurable score differences across datasets. Source: Demsar 2006, JMLR 7:1-30.
+- **McNemar's test** when each model runs once on a test set: it uses only the discordant pairs (one right, other wrong). Use an exact binomial version when the discordant counts are small, but note that the exact conditional test is conservative: the mid-p version performed well in a comparison across 9595 scenarios, and the continuity-corrected asymptotic test did not (Fagerland, Lydersen and Laake 2013, BMC Med Res Methodol 13:91, doi:10.1186/1471-2288-13-91, abstract-level claim). Source for the discordant-cell logic: Raschka 2018, arXiv:1811.12808.
+- **Several datasets**: treat datasets as the independent units. Wilcoxon signed-rank for two classifiers, Friedman with post-hoc tests for more (Iman-Davenport correction makes it less conservative); resampling error within a dataset is not the issue there. The signed-rank test needs commensurable score differences across datasets. Source: Demšar 2006, JMLR 7:1-30.
+- **Seed runs on one dataset**: the unit is one full training run (one seed), so n is the number of seeds, not the number of test examples or epochs. Pairing by seed is valid only if the seed fixes the same initialisation and data order for both methods; if it fixes one but not the other, treat the runs as unpaired (Welch). The inference concerns the training procedure on this data, not generalisation to other datasets: for that, use datasets as units (next entry). Sources: Colas et al. 2018, arXiv:1806.08295 (number of seeds, power, Welch when variances differ); Demšar 2006, JMLR 7:1-30 (datasets as the independent units).
 - **Reinforcement-learning and few-run settings**: report interval estimates and the interquartile mean rather than a point estimate (Agarwal et al. 2021, arXiv:2108.13264, abstract-level claim); the number of seeds determines power, and Welch's t-test applies when variances differ (Colas et al. 2018, arXiv:1806.08295).
 
 | Condition | Check |
