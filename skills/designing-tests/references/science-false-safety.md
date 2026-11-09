@@ -18,9 +18,13 @@ the reader's confidence rises for nothing.
 
 The detector mirrors the mutation check of software: name how the analysis could have come out
 the other way, or make it do so. Run it on data where the answer is known to be negative (the H0
-simulation, or the real data with the labels shuffled) and see whether it still reports an effect;
+simulation, or the real data with the labels permuted) and see whether it still reports an effect;
 run it on data with a planted effect and see whether it finds it. An analysis that "finds" the
-effect in shuffled data, or that cannot miss a planted one, was never testing the question.
+effect in permuted data, or that cannot miss a planted one, was never testing the question.
+Permute at the unit of assignment (whole clusters, within pairs or blocks), never at the row
+level, because a row-level shuffle breaks the dependence the analysis must cope with and hides
+pseudoreplication. Repeat the permutation many times and read the rejection rate against the
+nominal rate; one shuffle proves little.
 
 The catalog below is a sample of ways this happens, with the reason each fails so that the
 reason transfers. It is not a list to tick.
@@ -31,7 +35,8 @@ reason transfers. It is not a list to tick.
 
 - *Circular analysis* (selecting on the outcome, then testing it). Units are chosen because they
   show the effect (the voxels, genes or runs with the largest difference) and the same data are then
-  tested for the effect: the selection guarantees it (Kriegeskorte et al. 2009, "double dipping").
+  tested for the effect: the selection guarantees it (Kriegeskorte et al. 2009, Nature Neuroscience 12:535-540, doi:10.1038/nn.2303, "double
+  dipping").
   Why it fails: the selection step used up the randomness the test relies on.
 - *Baseline tests after randomization.* Testing whether randomized groups differ on a baseline
   variable asks whether chance operated, and by construction any difference is chance. A
@@ -49,31 +54,35 @@ reason transfers. It is not a list to tick.
 **Forking paths.** Analysis choices (outliers, covariates, transformations, subgroups, which
 outcome) made after seeing the data, even honestly and without searching for significance, mean
 that a different dataset would have led to different analyses, and the nominal error rate no
-longer describes the procedure (Gelman and Loken 2013). Why it fails: the number of effective
+longer describes the procedure (Gelman and Loken 2013, "The garden of forking paths", unpublished manuscript, Columbia
+University, 14 Nov 2013; no DOI). Why it fails: the number of effective
 tests is larger than the number reported.
 
 **Pilot-effect power.** Powering a study on the effect a pilot observed. The pilot's estimate is
 noisy, and a pilot that was followed up because it looked good is also biased upward, so the study
-is underpowered for the real effect (Albers and Lakens 2018). Why it fails: the number looks like
+is underpowered for the real effect (Albers and Lakens 2018, Journal of Experimental Social Psychology 74:187-195,
+doi:10.1016/j.jesp.2017.09.004). Why it fails: the number looks like
 evidence about the effect and is mostly noise.
 
 **Post-hoc power.** Computing power from the observed effect after the result. It is a function of
-the p-value, so it re-reports it and cannot say whether the study was informative (Hoenig and Heisey
-2001). Why it fails: it cannot differ from what it was computed from.
+the p-value, so it re-reports it and cannot say whether the study was informative (Hoenig and Heisey 2001, The American Statistician 55:19-24,
+doi:10.1198/000313001300339897). Why it fails: it cannot differ from what it was computed from.
 
 **Pseudoreplication.** Treating replicates below the unit of assignment as independent (cells in
 a dish, measurements per subject, epochs per recording, reruns of one training run). The test then
-claims more independent evidence than exists (Hurlbert 1984), and small effects become
+claims more independent evidence than exists (Hurlbert 1984, Ecological Monographs 54:187-211, doi:10.2307/1942661), and small effects become
 "significant". Why it fails: the sample size in the test is not the sample size of the design.
 
 **Normality tests as gatekeepers.** Running a test of normality and choosing the main test from
 its outcome. Small samples give it little power to see departures that matter, large samples reject
 harmless ones, the condition concerns the sampling distribution of the statistic and not the raw
-data, and the conditional procedure alters the error rates of the test that follows (Rochon, Gondan
-and Kieser 2012). Why it fails: it looks like a check and decides the wrong question.
+data, and the conditional procedure distorts the error rates of the test that follows (Rochon, Gondan
+and Kieser 2012, BMC Medical Research Methodology 12:81, doi:10.1186/1471-2288-12-81: in their
+simulations the conditional Type I error rates were seriously altered while the overall rate of the
+two-stage procedure stayed near nominal, and the authors call the procedure formally incorrect). Why it fails: it looks like a check and decides the wrong question.
 
 **"Not significant" read as "no effect".** Failure to reject H0 is what a small study, or noisy
-data, produces too (Altman and Bland 1995). Why it fails: the test was never set up to support
+data, produces too (Altman and Bland 1995, BMJ 311:485, doi:10.1136/bmj.311.7003.485). Why it fails: the test was never set up to support
 absence; an interval or an equivalence test against a margin can.
 
 **p-values without effect sizes.** A p-value mixes the size of the effect with the precision of the
@@ -85,7 +94,7 @@ that exaggerates (see [science-showing-and-explaining.md](science-showing-and-ex
 Why it fails: the reader sees the selection, not the data.
 
 **A known-truth run that cannot fail.** Simulating data from the very model the analysis fits, with
-the assumptions the test needs, and finding the test well calibrated. Why it fails: the assumptions
+the assumptions the test needs, and finding the test behaving correctly. Why it fails: the assumptions
 were put into the data, so the run says nothing about whether they hold.
 
 ## What to do instead

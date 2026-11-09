@@ -24,7 +24,8 @@ that are not here, and they get the same two questions.
 - **The unit.** The unit of analysis is the unit that was independently assigned to a condition or
   independently sampled. Replicates below that unit (several measurements per animal, cell
   culture well, user, seed-less rerun of the same model) are not independent evidence about the
-  condition. Treating them as if they were is pseudoreplication (Hurlbert 1984): the test's error
+  condition. Treating them as if they were is pseudoreplication (Hurlbert 1984, Ecological Monographs 54:187-211,
+  doi:10.2307/1942661): the test's error
   rate no longer holds, and the cause is in the protocol, so it cannot be repaired by the test
   alone. Decide here whether replicates are averaged, modelled with a random effect for the unit,
   or analyzed with a method that handles clustering.
@@ -65,18 +66,26 @@ checks of the pipeline (those are in the next section and use simulated data).
 
 ## Known-truth runs
 
+A per-step check against planted truth while the pipeline is built is a known-truth check (a
+confirm); the simulation of the whole battery, run end to end as it will run on real data, is the
+known-truth run (the guard's proof against known truth). This section is about the run.
+
 Before any real data, run the real pipeline on data whose truth you set:
 
 1. Simulate data in the shape the study contract fixes ([science-data.md](science-data.md)), with
-   the same units, structure, missingness and n as the plan, once under H0 and once under the effect
-   that matters (the SESOI or the stated meaningful effect).
+   the same units, structure, missingness and n as the plan, once under H0, once under the effect
+   that matters (the SESOI or the stated meaningful effect), and once for each further distinction
+   the battery claims to make: a real effect against an artifact of one subgroup, an effect
+   against a difference caused by clustering, and so on. A battery that was never shown the
+   artifact it claims to rule out has not been shown to rule it out.
 2. Run the real analysis code: the same functions that will run on the real data, including any
    preprocessing, model fitting, decision rules and multiplicity handling.
 3. Repeat enough times that the Monte Carlo error is smaller than the tolerance you care about.
    The standard error of an estimated rate p from B runs is sqrt(p(1 - p) / B); with a false
    positive rate near 0.05, a tolerance of a few thousandths needs thousands of runs, and the
    decision to run more is made from that formula, not from habit. Report the estimate with its
-   interval.
+   interval, and for each scenario the rate of each outcome pattern of the
+   pattern-of-outcomes table (support, evidence against, inconclusive) with its Monte Carlo SE.
 4. Read three things. The **false-positive rate** under H0 should be consistent with the nominal
    level within Monte Carlo error (below it is acceptable for discrete or conservative tests;
    above it means the pipeline or the test is invalid for this design). The **power** at the effect
@@ -91,7 +100,7 @@ where the answer is known. The same simulation under H0 is the render target for
 figures ([science-showing-and-explaining.md](science-showing-and-explaining.md)).
 
 A known-truth run that cannot fail proves nothing: if the simulation reuses the analysis's own
-assumptions to generate data, the pipeline will look calibrated by construction. Generate the data
+assumptions to generate data, the pipeline will look correct by construction. Generate the data
 by a process that is not the model being fitted, at least for the robustness runs.
 
 ## Sample size
@@ -102,17 +111,24 @@ while keeping errors at the stated level? Build it from these parts:
 - **The effect.** Power is computed at the SESOI or a stated meaningful effect. It is never taken
   from the effect a pilot happened to observe: that estimate is noisy, and if the pilot was
   followed up because it looked promising, it is also inflated, so the study is underpowered for
-  the true effect (Albers and Lakens 2018 show the bias when power analyses use pilot effects). For
+  the true effect (Albers and Lakens 2018, Journal of Experimental Social Psychology 74:187-195,
+  doi:10.1016/j.jesp.2017.09.004, show how effect size estimators and following up only on feasible
+  pilots bias the sample size). For
   an equivalence question, power is the chance of concluding equivalence when the true effect is
   zero or at the most plausible value, against the margin.
 - **The variance (or the nuisance parameters).** From a pilot or the literature, with its
-  uncertainty acknowledged: an SD estimated from a small pilot is itself imprecise, so use an
+  uncertainty acknowledged: a standard deviation (SD) estimated from a small pilot is itself imprecise, so use an
   upper confidence limit, or show the result at several plausible values.
 - **The alpha and the target power**, agreed, and the number of tests the multiplicity decision
   implies ([science-questions-and-tests.md](science-questions-and-tests.md)).
-- **The design effect.** Clustering inflates the variance of a mean by about 1 + (m - 1) times the
-  intraclass correlation, for clusters of size m; blocks and pairing change it in the other
-  direction. The effective sample is the number of units divided by that factor.
+- **The design effect.** For clusters of equal size m, clustering inflates the variance of a mean
+  by 1 + (m - 1) times the intraclass correlation; blocks and pairing change it in the other
+  direction. The effective sample is the number of units divided by that factor. Unequal cluster
+  sizes inflate it further, depending on the coefficient of variation of cluster size, and the
+  inflation is negligible only when that coefficient is small (below about 0.23 in the trial setting
+  studied); see Eldridge et al. 2006, International Journal of Epidemiology 35:1292-1300,
+  doi:10.1093/ije/dyl129, whose simple formula suits cluster-level analyses weighted by size and is
+  conservative for other analyses.
 - **Attrition and exclusions.** To end with n analyzable units, enroll n / (1 - a) where a is the
   expected loss fraction. Enrolling n x (1 + a) leaves the study short.
 - **Analytic or simulated.** Use the closed-form calculation when one exists for exactly your
@@ -128,7 +144,8 @@ temptation to claim a power the budget cannot buy.
 
 Do not compute power after the data are in. Observed ("post-hoc") power is a one-to-one function of
 the p-value, so it adds nothing to the result and cannot say whether a null result is
-informative (Hoenig and Heisey 2001); the interval and the equivalence test do. See
+informative (Hoenig and Heisey 2001, The American Statistician 55:19-24,
+doi:10.1198/000313001300339897); the interval and the equivalence test do. See
 [science-false-safety.md](science-false-safety.md).
 
 ## Agreeing the assumptions
