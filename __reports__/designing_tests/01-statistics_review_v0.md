@@ -71,3 +71,23 @@ Decision legend as in the consistency review.
 5. **Sources not read by the verifier.** The landscape's sources were opened by its implementer
    under the leaf's rule, and the 15 spot checks held, so they stand. The science references'
    citations from memory are opened and completed under consistency F20.
+
+## Resolution
+
+Every finding was accepted and is fixed, except the parts of F15 rejected above (single-level factors and unbalanced groups, now listed under "What check does not catch" in `science-data.md`). The merges are the ones listed in the consistency review's resolution.
+
+**Sources after the fixes.**
+
+| Claim | Source opened by the fixer | Standing |
+|---|---|---|
+| F7: Kenward-Roger outside linear mixed models; parametric bootstrap for GLMMs | Bolker et al., GLMM FAQ | Supported |
+| F7: REML likelihoods not comparable across fixed effects | none | Standard result, cited to no source |
+| F8: missing-data mechanism row | none | Argued, uncited, like the other axes |
+| F9: four chains, R-hat < 1.01, bulk and tail ESS > 400 | Vehtari et al., arXiv:1903.08008 | Supported |
+| F10: tau² estimator, few-studies caution | Cochrane Handbook ch. 10; IntHout et al. 2014 | Supported |
+| F11: fold correlation; heuristic for k-fold | Benavoli et al. 2017 | Supported; Nadeau and Bengio 2003 not opened |
+| F12: Rochon et al. 2012 | Abstract only on this pass | The landscape keeps n = 30 per group and 17.0% vs 4.7% from the implementer's earlier full-text read (also confirmed in full text by the verifier). The science references keep only what the abstract states |
+| F13: McNemar | Fagerland, Lydersen and Laake 2013 (abstract) | The "both counts above 50" rule and the b + c < 25 rule are both dropped. Mid-p McNemar is recommended instead |
+| F14: design effect with unequal cluster sizes | Eldridge et al. 2006 (abstract) | The CV dependence and the 0.23 threshold are stated; the inflation formula is not given |
+| F19: seed runs | Colas et al. 2018; Demšar 2006 | The unit and the scope of the inference are supported. The pairing condition is argued from the design |
+| Science references' citations from memory | venue and DOI now given for all eleven | Schuirmann 1987 and Kriegeskorte et al. 2009 were checked against the record only, not the abstract. The rest were checked against their abstracts |

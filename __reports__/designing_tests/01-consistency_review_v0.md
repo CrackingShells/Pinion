@@ -115,3 +115,30 @@ that turned it red:
 | `compare` refuses a manifest that breaks the schema | refusal removed |
 | `init`: header, delimiter, format, overwrite, TODO placeholders, usage errors | second line read as header; TSV split on commas; format hard-coded; overwrite allowed; origin filled; last variable omitted; usage checks removed |
 | CLI exit 64 | usage exit 2; argparse exit 2 kept; unreadable input exit 1 |
+
+## Resolution
+
+Every finding was accepted and is fixed. None was rejected.
+
+| Owner | Findings | Fix commit | Merge |
+|---|---|---|---|
+| coordinator | F1 | `760c2d6` | on the branch |
+| root_skill | F2, F3, F4, F11 to F14, F16 to F18, F23 | `f399211`, rebased | `8c67adb` |
+| science_method | F2, F5, F10, F20, F21 | `518918c`, rebased | `215c537` |
+| test_landscape | F5, F15, F19, F24 | `6739573`, rebased | `c8c00d9` |
+| study_contract | F4, F6 to F9, F22 | `bfff14d` (red guards), `036e722`, rebased | `0bd653d` |
+| coordinator | seams: the plan's protocol category names clusters, time and event status; the script map says `compare` never opens data | `23839c7` | on the branch |
+
+**Rerun of the attacks that found something.**
+- A2: the narrowed banned-word check (it bans "deviation" except in "standard deviation") prints nothing.
+- A3: "SD" is defined at first use in both files.
+- A4: "study contract" is the only name. The pair "known-truth check" (a confirm) and "known-truth run" (the guard's proof on the whole battery) replaces calibration and validation, in `SKILL.md` and in the science references.
+- A8: software step 1's gate now names `software-planning.md`.
+- A11: the Proportions family now ends by asking for the unnamed case.
+- `quick_validate`: valid, description 1024 characters.
+- `SKILL.md`: 214 lines.
+- Guards: 79 passed. That is 56 − 2 merged count tests + 25 new guards.
+
+**Mutation evidence for the new guards.** 28 injected bugs, each turning a new or changed guard red. Two mutants survived the first pass and each got a guard: an equal-bounds range rejected, and `utf-8-sig` dropped in `init`. The older guards were not re-mutated; they pass on the changed code.
+
+**Follow-up from the user.** A separate read-only review for meta-discourse and context contamination runs on the merged result before wiring.
