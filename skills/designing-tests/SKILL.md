@@ -1,8 +1,8 @@
 ---
 name: designing-tests
-description: Designs tests before they are written, in both senses of the word, so each one answers a stated question and can fail. Software - decides which tests deserve to exist and writes them, giving each a role (probe, confirm or guard) that sets how long it lives, composed with its scope (unit, integration, end-to-end), so suites stay small and free of tautological tests that give false safety. Science - designs the statistical tests that answer a research question together with the experiment that feeds them, covering hypotheses, why each test fits and its alternatives do not, sample size, cohort and budget, a data contract, and figures that show the result whether good or bad. Use whenever writing, adding, reviewing or pruning tests, doing TDD or fixing a bug, and whenever planning a feature, an implementation or a roadmap, even if tests are not mentioned; also when choosing a statistical test, sizing a sample, comparing algorithms or models across noisy runs, designing an experiment, or writing an analysis plan.
+description: Designs tests before they are written, in both senses of the word, so each one answers a stated question and can fail. Software - decides which tests deserve to exist and writes them, giving each a role (probe, confirm or guard) that sets how long it lives, composed with its scope (unit, integration, end-to-end), so suites stay small and free of tautological tests that give false safety. Science - designs the statistical tests that answer a research question together with the experiment that feeds them, covering hypotheses, why each test fits and its alternatives do not, sample size, cohort and budget, a study contract, and figures that show the result whether good or bad. Use whenever writing, adding, reviewing or pruning tests, doing TDD or fixing a bug, and whenever planning a feature, an implementation or a roadmap, even if tests are not mentioned; also when choosing a statistical test, sizing a sample, comparing algorithms or models across noisy runs, designing an experiment, or writing an analysis plan.
 license: AGPL-3.0-or-later
-compatibility: Only scripts/study_contract.py needs uv, or Python 3.9+ with jsonschema; the method itself needs nothing.
+compatibility: Only scripts/study_contract.py needs uv, or Python 3.9+ with jsonschema 4 or later; the method itself needs nothing.
 allowed-tools: Bash(uv run *study_contract.py*)
 ---
 
@@ -32,10 +32,10 @@ lifetime; lifetime sets how much weight the result carries.
 In science the same roles read, always alongside the field's own term:
 
 - guard: the **battery** of confirmatory statistical tests for a research question, written before
-  the data and rerun on each dataset swapped in while the question stands, with its known-truth
-  calibration;
+  the data and rerun on each dataset swapped in while the question stands, together with its
+  known-truth run (the end-to-end simulation of the whole battery);
 - confirm: the **known-truth check** of one analysis step while the pipeline is built (does it
-  recover the effect planted in toy data?), culled once the battery is calibrated;
+  recover the effect planted in toy data?), culled once the known-truth run passes;
 - probe: **exploratory analysis or pilot**, which feeds decisions (variance, feasibility, which
   measure is more precise) and never confirms.
 
@@ -49,11 +49,15 @@ where a failure localises.
 ## Software procedure
 
 Use it when writing, reviewing or planning tests, doing TDD, or fixing a bug. Do the steps in order.
+When only planning (a feature, an implementation, a roadmap), steps 1 to 3 apply, and steps 4 to 6
+become the plan's done-criteria. A software plan names the guards (behavior, scope, the failure each
+catches), the probes (question and decision), the trust boundaries, what was deliberately not tested
+and why, and the done-criteria.
 
 1. **Name the expected behaviors and who relies on them.** Start from risk and from consumers, the
    design's cornerstones and the seams with code you do not own, never from a list of functions.
-   Gate: could you say, for each behavior, who would be hurt if it broke? →
-   `references/software-roles-and-scope.md`
+   Gate: can you say, for each behavior, who would be hurt if it broke? →
+   `references/software-planning.md`, `references/software-roles-and-scope.md`
 2. **Choose each guard's scope.** The scope is where the consumer who relies on the behavior can
    observe it, not the most convenient place. Go through that consumer's interface so the guard
    survives refactors. Gate: would this guard still stand if the internals were rewritten, and is
@@ -66,14 +70,14 @@ Use it when writing, reviewing or planning tests, doing TDD, or fixing a bug. Do
    name the behavior it checks, and would its failure message say what broke? →
    `references/software-writing.md`
 5. **Run the mutation check.** Name a plausible bug, or inject one (invert a condition, return a
-   constant), and watch the guard go red. Gate: could a plausible wrong implementation pass this
-   guard? → `references/software-false-safety.md`
+   constant), and watch the guard go red. Gate: does this guard go red under a plausible wrong
+   implementation? → `references/software-false-safety.md`
 6. **Cull or promote confirms; then review the set.** Delete a confirm once its guard passes;
    promote it only if it encodes a behavior worth guarding, rewritten to guard standards. A bug
    leads to the behavior that lacked a guard: reproduce it as a confirm, then strengthen the guard
-   for the class of bug. Gate: does any second test on a behavior catch a plausible bug the first
-   misses, and is the suite growing one test per incident? → `references/software-planning.md`,
-   `references/software-false-safety.md`
+   for the class of bug. Gates: does every second test on a behavior catch a plausible bug the first
+   misses? → `references/software-planning.md`. Is the suite free of growth by one test per
+   incident? → `references/software-false-safety.md`
 
 ## Science procedure
 
@@ -84,7 +88,7 @@ to loop between steps 3 and 4 until they agree.
 1. **Questions.** Research question, hypotheses, then the computable statistical questions that
    together answer them, at whatever granularity the topic needs, from one test to a battery.
    Argue why that battery suffices with a pattern-of-outcomes table (support, evidence against,
-   inconclusive). Use an effect size and a SESOI where one is meaningful; label exploratory
+   inconclusive). Use an effect size and a smallest effect size of interest (SESOI) where one is meaningful; label exploratory
    questions as probes. Gate: is there an outcome pattern that would count against the hypothesis?
    → `references/science-questions-and-tests.md`
 2. **Hypotheses.** H0 and H1 for each statistical question, one- or two-sided justified. When the
@@ -99,13 +103,16 @@ to loop between steps 3 and 4 until they agree.
    simulation or a cited result, not an assumption? → `references/science-questions-and-tests.md`,
    `references/science-test-landscape.md`
 4. **Co-design the protocol.** Pairing, blocking, randomization, blinding and the unit of
-   replication each change which test is valid. Controls are part of the protocol. Gate: would a
-   different design decision have changed the test, and did you check? →
+   replication each change which test is valid. Controls are part of the protocol. Gate: have you
+   checked which design decisions change the test? →
    `references/science-protocol-and-sample.md`
-5. **See the battery fail on known truth.** Simulate data in the contract's schema under H0 and
-   under the effect that matters, run the real pipeline, and read the false-positive rate and the
-   power. This also debugs the pipeline before any data are collected. Gate: has the battery been
-   seen to reject a planted effect and to stay quiet under H0? →
+5. **See the battery fail on known truth.** Simulate data in the study contract's shape under H0,
+   under the effect that matters, and for each distinction the battery claims to make (effect
+   against artifact, say). Write the manifest now and run `check` on the simulated datasets before
+   running the pipeline. This also debugs the pipeline before any data are collected. Gate: over
+   many simulations, is the false-positive rate near nominal and does power hold at the stated
+   effect, each with its Monte Carlo interval, and does each claimed distinction have its own
+   known-truth scenario? →
    `references/science-protocol-and-sample.md`
 6. **Size the sample.** Power from the SESOI or a stated meaningful effect, never from a pilot's
    observed effect; variance from a pilot or the literature; allow for design effect and attrition;
@@ -114,11 +121,12 @@ to loop between steps 3 and 4 until they agree.
    `references/science-protocol-and-sample.md`
 7. **Cohort and budget.** Inclusion and exclusion, stratification, allocation, and cost as unit cost
    times n times attrition margin. When unaffordable: reduce variance, then revise the meaningful
-   effect openly and agreed, then downgrade to exploratory. Gate: if the budget forced a change, was
-   it one of those levers, named and agreed? → `references/science-protocol-and-sample.md`
+   effect openly and agreed, then downgrade to exploratory. Gate: was every budget-driven change one of
+   those levers, named and agreed? → `references/science-protocol-and-sample.md`
 8. **Data.** Every dataset conforms to the study contract so datasets can be swapped under the same
-   battery. This step has low freedom: validate, fix, repeat. Run exactly
-   `uv run scripts/study_contract.py check <manifest>` and fix until it prints `RESULT=OK`, before
+   battery; each dataset declares its `unit`, the variable whose levels are independent. This step has low freedom: validate, fix, repeat. Run exactly
+   `uv run <skill-dir>/scripts/study_contract.py check <manifest>` (`<skill-dir>` is this skill's
+   base directory; run it from the project) and fix until it prints `RESULT=OK`, before
    any test runs on a dataset. Gate: did `check` print `RESULT=OK` for every dataset about to be
    analysed? → `references/science-data.md`
 9. **Show the results.** Every unit behind the estimate; the effect with its uncertainty against the
@@ -127,9 +135,14 @@ to loop between steps 3 and 4 until they agree.
    Gate: would an inconclusive result look inconclusive, and a null look like a null? →
    `references/science-showing-and-explaining.md`
 
+Scale each step to the study: a step that is trivially met gets one line saying why, and no gate is
+skipped silently. Any change to the plan after it was fixed goes in the evolution log with its stage,
+reason, who agreed and its effect on the claim (`references/science-analysis-plan.md`).
+
 Before delivering, check the design against the statistical failure catalog
-(`references/science-false-safety.md`) and write the plan to its categories
-(`references/science-analysis-plan.md`). The catalog is a sample: look for the case it does not name.
+(`references/science-false-safety.md`), which is a sample: look for the case it does not name. Write
+the plan to its categories (`references/science-analysis-plan.md`), and explain the design to
+whoever ordered it (see Explaining the design).
 
 ## Non-negotiables
 
@@ -192,7 +205,7 @@ Read by where you are, not in order. Open only what the moment needs.
 
 Files that are not references:
 
-- `scripts/study_contract.py`: **run it, do not read it.** `check` validates a manifest and its
+- `scripts/study_contract.py`: **run it, do not read it**, as `uv run <skill-dir>/scripts/study_contract.py`. `check` validates a manifest and its
   datasets, `init` scaffolds a manifest and dictionary from CSV headers, `compare` says whether two
   manifests are swappable. Details in [science-data](references/science-data.md).
 - `assets/study-contract.schema.json`: the manifest schema. **Read it** when completing a manifest;
