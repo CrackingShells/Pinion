@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """Test plan and guards for scripts/study_contract.py.
 
-Run from the repository root, either way:
+Run from the skill directory, either way:
 
-    uv run --with pytest --with jsonschema pytest skills/designing-tests/evals/ -q
-    uv run --with pytest --with jsonschema skills/designing-tests/evals/test_study_contract.py
-
-`evals/` is not part of the packaged skill.
+    uv run --with pytest --with jsonschema pytest evals/ -q
+    uv run --with pytest --with jsonschema evals/test_study_contract.py
 
 # What must keep working (guards)
 

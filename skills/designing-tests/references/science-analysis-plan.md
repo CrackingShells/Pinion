@@ -1,8 +1,8 @@
 # The analysis plan
 
-Open this when writing, reviewing or updating the document that holds a study's design. There is
-no template: a template would push every study toward the same shape, and the studies differ. The
-plan is defined by the categories below, each by what it must establish and why. Write each in the
+Open this when writing, reviewing or updating the document that holds a study's design. Write it
+from the categories below, each defined by what it must establish and why, not from a template:
+studies differ in shape, and a template would push them toward one. Write each in the
 form this study needs, in the order that reads best, and add a category if the study needs one.
 
 ## Contents

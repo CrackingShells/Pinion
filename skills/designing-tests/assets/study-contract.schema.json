@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:designing-tests:study-contract:1",
   "title": "Study manifest",
-  "description": "The shape of a study manifest. The contract version is the last segment of this $id: a breaking change to this schema is a breaking release of the skill. Paths in a manifest are relative to the manifest's own directory.",
+  "description": "The shape of a study manifest. The contract version is the last segment of this $id. Paths in a manifest are relative to the manifest's own directory.",
   "type": "object",
   "additionalProperties": false,
   "required": ["contract_version", "study", "research_questions", "statistical_questions", "protocol_version", "datasets", "evolution_log"],

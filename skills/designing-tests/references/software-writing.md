@@ -31,9 +31,9 @@ Each rule exists so that a red test tells the truth and a green one means someth
   has no honest name. Several assertions are fine when they describe one behavior.
 - **A failure message names what broke**: the behavior, the input and the expected versus actual
   value, so the reader can act without opening the test. `assert result` tells nobody anything.
-- **Use the real thing at boundaries we own; mock only what we do not own.** A mock of our own
+- **Use the real thing at boundaries the project owns; mock only what it does not own.** A mock of the project's own
   module makes the test describe the mock's script, and the code can break behind it. Fake what is
-  slow, nondeterministic or outside our control (the network, the clock, a third party), and
+  slow, nondeterministic or outside the project's control (the network, the clock, a third party), and
   keep that fake faithful to the real behavior.
 - **Deterministic.** Fix seeds, clocks and ordering; avoid sleeps; isolate shared state. A flaky
   test trains everyone to ignore red, which destroys the value of every other test.
@@ -79,9 +79,9 @@ A confirm is scaffolding. Its writing rules are about making it easy to remove.
 A probe is an experiment, so it is written to be thrown away and its result kept.
 
 - **It stays outside the suite**: a scratch script, a notebook, a REPL session. Inside the suite it
-  becomes a test with no role, runs forever, and asserts a guess about code we do not own.
-- **Write the question and the decision first.** "Does the client retry on 429? Decides whether we
-  add our own backoff." Without the decision, the probe is not needed.
+  becomes a test with no role, runs forever, and asserts a guess about code the project does not own.
+- **Write the question and the decision first.** "Does the client retry on 429? Decides whether to
+  add a backoff." Without the decision, the probe is not needed.
 - **Record the answer where decisions are recorded**: the plan, a design note, a comment beside
   the decision it affects. Then delete the probe.
 - **If the design now relies on the answer**, write a boundary guard at the seam under the rules
@@ -94,14 +94,14 @@ A probe is an experiment, so it is written to be thrown away and its result kept
   rows are redundant.
 - **Make each test own its data**, or share only read-only data. Hidden coupling through shared
   mutable fixtures is the usual source of order-dependent failures.
-- **Draw the trust boundary explicitly**: what is exercised for real (code and storage we own), what
+- **Draw the trust boundary explicitly**: what is exercised for real (code and storage the project owns), what
   is faked (network, clock, randomness, third-party services) and why. Write that down once in
-  the plan; tests then follow it, and a mock of something we own is visibly a violation.
+  the plan; tests then follow it, and a mock of something the project owns is visibly a violation.
 - **Keep fakes honest.** A fake that is more forgiving than the real service lets the guard pass
   while production fails. Check recorded or faked behavior against the real thing occasionally,
   through a probe, and update the fake when it drifts.
-- **Test the boundary where our code meets the outside**: malformed input, timeouts, partial
-  responses, permission errors. These are the cases where the outside differs from our assumptions.
+- **Test the boundary where the project's code meets the outside**: malformed input, timeouts, partial
+  responses, permission errors. These are the cases where the outside differs from the code's assumptions.
 
 ## The must-run set
 
@@ -114,4 +114,4 @@ slow cornerstone guard may.
 Run the full suite at the cadence the project can afford, and the must-run set always. If the
 must-run set is turning slow or grows large, that is a sign of a suite problem (too many guards at
 too high a scope), not a reason to run it less often. Then ask which expected behavior of this
-software the list above does not cover, and write the test that fits it.
+software none of these covers, and write the test that fits it.

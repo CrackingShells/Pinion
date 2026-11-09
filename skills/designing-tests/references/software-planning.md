@@ -1,9 +1,7 @@
 # Software tests: planning which guards exist
 
 A suite stays small and useful when each test earns its place by a reason, not when it is held to
-a number. This page says where guard candidates come from, what stops them from multiplying, how
-bugs feed back without overfitting, what a software test plan must establish, and how to put tests
-inside a larger plan.
+a number.
 
 ## Contents
 
@@ -21,15 +19,15 @@ candidates worth a guard:
 
 1. **Behaviors consumers rely on.** For each consumer (a caller, a user, another service, a
    future maintainer reading the interface), ask what they would notice if it broke. Each
-   answer is an expected behavior. Test only what we own: a framework's or language's behavior is
+   answer is an expected behavior. Test only what the project owns: a framework's or language's behavior is
    its maintainers' to guard.
 2. **Design cornerstones.** The decisions everything else rests on: the data model's shape, the
    ordering or atomicity promise, the contract between layers. When a cornerstone breaks, many
    features break quietly. These are the guards that matter most, and they are few and
    high-value. Find them by asking "if this stopped holding, how many other things would be wrong
    without any of their own tests noticing?"
-3. **Seams with code we do not own.** The places where our code assumes something about a database,
-   an API, a file format, another team's service. Our code's correctness depends on that
+3. **Seams with code the project does not own.** The places where its code assumes something about a database,
+   an API, a file format, another team's service. Its correctness depends on that
    assumption, so the assumption gets a boundary guard, usually at integration scope, exercised
    against the real thing or a faithful recorded one.
 
@@ -97,7 +95,7 @@ form the project already uses and make sure each of these is answered:
   without a decision is curiosity and does not belong in the plan.
 - **Trust boundaries and fixtures.** What is real, what is faked or recorded and why, which
   data the tests need and how it is built (see `software-writing.md`).
-- **What was deliberately not tested, and why.** Restraint made visible: code we do not own,
+- **What was deliberately not tested, and why.** Restraint made visible: code the project does not own,
   behavior nobody relies on, cases covered by a lower or higher guard, internals expected to
   change. This section is what lets a reviewer tell a gap from a decision.
 - **Done-criteria.** Every guard has been seen failing before it passed; confirms are culled or
@@ -126,5 +124,5 @@ guards that the rest of the design leans on) and into the seams. Features built 
 cornerstone need fewer tests of their own, not more.
 
 Before finalizing any plan, ask: which expected behavior would I be most upset to see break
-unnoticed, and does a guard in this plan catch it? Then look for the source of guards this page
-does not list.
+unnoticed, and does a guard in this plan catch it? Then look for a source of guards not named
+here.

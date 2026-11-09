@@ -1,9 +1,7 @@
 # Software tests: false safety
 
 A green suite is a claim: nothing relied on is broken. A test that cannot fail, or whose failure
-would change nothing, makes that claim without evidence. This page gives the principle, a catalog
-of cases that illustrate it, the signs a suite is exploding, the check that detects both, and the
-self-review that applies it per role.
+would change nothing, makes that claim without evidence.
 
 ## Contents
 
@@ -38,8 +36,8 @@ that applies well beyond it. Use the reason, not the label.
   with the code, so a wrong formula passes. Cure: derive the expectation independently, by hand,
   from an oracle or as a property.
 - **Mock echo.** The test configures a mock to return X, runs code that returns what the mock gave,
-  and asserts X. It verifies the mock's script. Cure: use the real collaborator where we own it;
-  where it is outside our control, test the code's *decision* about the response (what it does
+  and asserts X. It verifies the mock's script. Cure: use the real collaborator where the project owns it;
+  where it is outside the project's control, test the code's *decision* about the response (what it does
   with a 429), not that the response was passed through.
 - **Set-then-get.** Assign a value, read it back, assert equality. It passes for any plain
   storage and fails only if the language is broken. It becomes meaningful only when something

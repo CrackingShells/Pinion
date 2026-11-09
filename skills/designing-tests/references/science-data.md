@@ -24,9 +24,8 @@ analysis; choosing and validating tests is in
 One JSON file per study, shaped by [assets/study-contract.schema.json](../assets/study-contract.schema.json).
 Paths inside it are relative to the manifest's own directory, so the folder can move.
 
-- `contract_version`: must equal the last segment of the schema's `$id`. A breaking change to the
-  schema ships as a breaking release of the skill, so a manifest written for another version is
-  rejected instead of half-read.
+- `contract_version`: must equal the last segment of the schema's `$id`. A manifest written for
+  another version is rejected instead of half-read.
 - `study`, `research_questions`, `statistical_questions`: the ids that tie data to the questions
   the battery answers. Without them a dataset is orphaned from the reason it exists.
 - `protocol_version`: the protocol the data were produced under. Two studies run under different

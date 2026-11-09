@@ -2,8 +2,8 @@
 
 Every software test answers two independent questions. The **role** says why the test exists, and
 so how long it lives and where it lives. The **scope** says how much of the system it exercises,
-and so what it costs and how well it localizes a failure. Mixing the two up produces the failures
-this skill exists to prevent: suites that only grow, tests that reassure without protecting, and
+and so what it costs and how well it localizes a failure. Mixing the two up produces suites that
+only grow, tests that reassure without protecting, and
 scaffolding left behind as if it were a cornerstone.
 
 ## Contents
@@ -13,7 +13,7 @@ scaffolding left behind as if it were a cornerstone.
 - [Role x scope matrix](#role-x-scope-matrix)
 - [Lifecycle](#lifecycle)
 - [TDD flow](#tdd-flow)
-- [Judging a case this page does not name](#judging-a-case-this-page-does-not-name)
+- [Judging a case no cell names](#judging-a-case-no-cell-names)
 
 ## Roles
 
@@ -61,15 +61,15 @@ combination looks like in practice, not a list of the only cases.
 
 | | Unit | Integration | End-to-end |
 |---|---|---|---|
-| **Guard** | *Use:* a pure transformation or rule consumers call directly (rounding, parsing, permission decision), asserted through its public interface. *Mistake:* a guard on a private helper, which is a confirm that was never culled and now blocks refactors | *Use:* the behavior of a seam: two components or our code and a database, queue or file format we depend on, exercised for real. *Mistake:* mocking one side of the seam, so the test checks the mock and the seam stays unguarded | *Use:* a journey a user or caller relies on, kept to the few cornerstones whose failure means the product does not work. *Mistake:* using it to cover behaviors that live lower, which makes the suite slow and each failure ambiguous |
+| **Guard** | *Use:* a pure transformation or rule consumers call directly (rounding, parsing, permission decision), asserted through its public interface. *Mistake:* a guard on a private helper, which is a confirm that was never culled and now blocks refactors | *Use:* the behavior of a seam: two components or the project's code and a database, queue or file format it depends on, exercised for real. *Mistake:* mocking one side of the seam, so the test checks the mock and the seam stays unguarded | *Use:* a journey a user or caller relies on, kept to the few cornerstones whose failure means the product does not work. *Mistake:* using it to cover behaviors that live lower, which makes the suite slow and each failure ambiguous |
 | **Confirm** | *Use:* the baby step on a block under construction (this function handles the empty list), may inspect internals. *Mistake:* leaving it unmarked, so nobody can tell it from a guard and it is kept forever | *Use:* checking that two new blocks connect while the wiring is being built. *Mistake:* keeping it after the guard that covers the same seam exists, so one behavior is paid for twice | *Use:* rarely; a smoke check that the new pieces start together before any guard exists. *Mistake:* usually a missing guard: if the check matters after the step, write it as a guard at the scope where its behavior lives |
-| **Probe** | *Use:* a few lines to learn what a library function returns at an edge. *Mistake:* committing it as a test, where it asserts a guess about code we do not own | *Use:* measuring how a real service or database behaves under the call pattern the design will use. *Mistake:* never recording the answer, so the next agent re-runs the experiment; or relying on the finding without turning it into a boundary guard | *Use:* checking feasibility of a whole path (can the deployed thing be reached at all?) before designing around it. *Mistake:* letting it linger in the suite as a flaky, slow test with no stated question |
+| **Probe** | *Use:* a few lines to learn what a library function returns at an edge. *Mistake:* committing it as a test, where it asserts a guess about code the project does not own | *Use:* measuring how a real service or database behaves under the call pattern the design will use. *Mistake:* never recording the answer, so the next agent re-runs the experiment; or relying on the finding without turning it into a boundary guard | *Use:* checking feasibility of a whole path (can the deployed thing be reached at all?) before designing around it. *Mistake:* letting it linger in the suite as a flaky, slow test with no stated question |
 
 ## Lifecycle
 
 **Probe.** Write the question and the decision it feeds before running it. When it answers, record
 the answer where decisions are kept (the plan, the design note, a comment at the decision), then
-delete the probe. If the design now relies on what the probe found about code we do not own, a
+delete the probe. If the design now relies on what the probe found about code the project does not own, a
 behavior of that code has become part of what must keep working. Rewrite the probe as a **boundary
 guard** at the seam, under guard standards (see `software-writing.md`). An upgrade needs that
 reliance; curiosity is not enough.
@@ -99,7 +99,7 @@ the same change as the behavior, with the reason stated, never "fixed until gree
 If you notice yourself keeping confirms "just in case", the guard was too weak or too high to trust
 alone. Strengthen the guard instead of keeping scaffolding.
 
-## Judging a case this page does not name
+## Judging a case no cell names
 
 Ask in this order. What decision does this test serve, and until when? (That gives the role.)
 Who relies on the behavior, and through what interface? (That gives the scope.) What plausible

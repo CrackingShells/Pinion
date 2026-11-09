@@ -114,7 +114,7 @@ grew without being useful.
 
 ## Roles in science
 
-The roles of the skill carry over, with the field's own term beside each:
+The three roles carry over, with the field's own term beside each:
 
 - **Guard: the battery** attached to a research question: its tests, its decision rules and its
   known-truth run, specified before the data. It lives as long as the question is

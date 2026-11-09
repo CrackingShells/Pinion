@@ -70,8 +70,8 @@ list? If not, add it to the plan.
 
 ## Explaining the design
 
-The skill owes an explanation to whoever ordered the design: the human, in the chat; another
-agent, in the hand-off report. This is not optional for science. Statistical choices and their
+Explain the design to whoever ordered it: the human, in the chat; another agent, in the
+hand-off report. This is not optional for science. Statistical choices and their
 justifications are widely misunderstood, so a summary of results by an expert, however accurate,
 leaves the recipient unable to judge the design or defend it.
 
