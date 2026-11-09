@@ -35,12 +35,12 @@ Ship `skills/designing-tests/` as a validated, packaged, Nest-listed Pinion skil
 ## Status
 ```mermaid
 graph TD
-    root_skill[Root SKILL.md]:::planned
-    software_references[Software references]:::planned
-    science_method[Science method references]:::planned
-    test_landscape[Statistical test landscape]:::planned
-    study_contract[Study contract and script]:::planned
-    review[Review]:::planned
+    root_skill[Root SKILL.md]:::done
+    software_references[Software references]:::done
+    science_method[Science method references]:::done
+    test_landscape[Statistical test landscape]:::done
+    study_contract[Study contract and script]:::done
+    review[Review]:::inprogress
     classDef done       fill:#166534,color:#bbf7d0
     classDef inprogress fill:#854d0e,color:#fef08a
     classDef planned    fill:#374151,color:#e5e7eb
@@ -51,12 +51,12 @@ graph TD
 ## Nodes
 | Node | Type | Status |
 |:-----|:-----|:-------|
-| `root_skill.md` | 📄 Leaf Task | ⬜ Planned |
-| `software_references.md` | 📄 Leaf Task | ⬜ Planned |
-| `science_method.md` | 📄 Leaf Task | ⬜ Planned |
-| `test_landscape.md` | 📄 Leaf Task | ⬜ Planned |
-| `study_contract.md` | 📄 Leaf Task | ⬜ Planned |
-| `review/` | 📁 Directory | ⬜ Planned |
+| `root_skill.md` | 📄 Leaf Task | ✅ Done |
+| `software_references.md` | 📄 Leaf Task | ✅ Done |
+| `science_method.md` | 📄 Leaf Task | ✅ Done |
+| `test_landscape.md` | 📄 Leaf Task | ✅ Done |
+| `study_contract.md` | 📄 Leaf Task | ✅ Done |
+| `review/` | 📁 Directory | 🔄 In Progress |
 
 ## Amendment Log
 | ID | Date | Source | Nodes Added | Rationale |
