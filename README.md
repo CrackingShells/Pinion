@@ -16,9 +16,16 @@ A pinion is a bird's outer wing, the feathers that drive its flight, and also th
 
 ## Installation
 
-`spawning-agent-plugins` is listed in the [Nest](https://github.com/CrackingShells/Nest) marketplace; that entry still installs from [cracking-shells-playbook](https://github.com/CrackingShells/cracking-shells-playbook), where the skill was first released, until Pinion publishes its own plugins.
+All three skills are listed in the [Nest](https://github.com/CrackingShells/Nest) marketplace and install from this repository's `plugins/` directory:
 
-To install a skill from this repository now, copy its directory into your skills folder:
+```bash
+claude plugin marketplace add CrackingShells/Nest
+claude plugin install <skill-name>@cracking-shells
+```
+
+Codex clients use `codex plugin marketplace add CrackingShells/Nest` and `codex plugin add <skill-name>@cracking-shells`. See the Nest README if you previously registered another marketplace named `cracking-shells`.
+
+To install a skill without a marketplace, copy its directory into your skills folder:
 
 ```bash
 git clone https://github.com/CrackingShells/Pinion.git
