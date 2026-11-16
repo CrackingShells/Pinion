@@ -280,3 +280,8 @@ bash 5); re-check with `scripts/lab/` if behaviour seems different.
 
 Full reproductions, the observed output and the reason each one fails:
 [references/anti-patterns.md](references/anti-patterns.md).
+
+## Reporting problems
+
+`waiting-on-processes` is in active development. If any part of it proves wrong or misleads you,
+report it to `CrackingShells/Pinion` by following [CONTRIBUTING.md](CONTRIBUTING.md).
