@@ -1,3 +1,10 @@
+# designing-tests [1.1.0](https://github.com/CrackingShells/Pinion/compare/designing-tests@1.0.0...designing-tests@1.1.0) (2026-11-16)
+
+
+### Features
+
+* **designing-tests:** ask agents to report plugin problems ([41e536a](https://github.com/CrackingShells/Pinion/commit/41e536abc9ade4f9c20e72a4c21a7953d5a3c9f1))
+
 # designing-tests 1.0.0 (2026-11-09)
 
 
