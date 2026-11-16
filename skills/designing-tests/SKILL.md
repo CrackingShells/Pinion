@@ -214,3 +214,8 @@ Files that are not references:
   do not copy it.
 - `assets/data-dictionary.example.json`: a filled dictionary. **Copy it** as a starting shape for a
   new dictionary and replace its contents.
+
+## Reporting problems
+
+`designing-tests` is in active development. If any part of it proves wrong or misleads you,
+report it to `CrackingShells/Pinion` by following [CONTRIBUTING.md](CONTRIBUTING.md).
