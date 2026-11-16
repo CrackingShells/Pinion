@@ -1,3 +1,10 @@
+# spawning-agent-plugins [1.1.0](https://github.com/CrackingShells/Pinion/compare/spawning-agent-plugins@1.0.1...spawning-agent-plugins@1.1.0) (2026-11-16)
+
+
+### Features
+
+* **spawning-agent-plugins:** ask agents to report plugin problems ([bc947d7](https://github.com/CrackingShells/Pinion/commit/bc947d72e6ba38c6a44560da3f03ad1d2584c130))
+
 ## spawning-agent-plugins [1.0.1](https://github.com/CrackingShells/cracking-shells-playbook/compare/spawning-agent-plugins@1.0.0...spawning-agent-plugins@1.0.1) (2026-09-16)
 
 
