@@ -329,3 +329,8 @@ Plugins 1.0 plugin` is the shape colgrep-mcp used.
 | `references/hooks.md` | designing the hook script: the per-event file rule and what each manifest may name, events, matcher names per harness, I/O contract, context cap, Cursor and Codex limits |
 | `references/versioning.md` | wiring the version bump: commitizen, semantic-release, npm, or none; independent sibling version lines; why tags need no migration |
 | `references/traps.md` | a plugin lists but does not connect, "Duplicate hooks file detected" at install, hooks do not fire, `x@x` install strings, stale uvx cache, Codex hooks, the marketplace-name collision, an assembled plugin tree drifting from its source, a Codex marketplace entry with an invalid auth enum, a generator fix that never reaches an already hub-mode repo |
+
+## Reporting problems
+
+`spawning-agent-plugins` is in active development. If any part of it proves wrong or misleads you,
+report it to `CrackingShells/Pinion` by following [CONTRIBUTING.md](CONTRIBUTING.md).
